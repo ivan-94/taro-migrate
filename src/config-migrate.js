@@ -2,6 +2,7 @@
  * 配置文件升级
  */
 const debug = require('debug')('taro-migrate')
+const chalk = require('chalk')
 const { getAllComponents } = require('./utils')
 const pathUtils = require('path')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
@@ -23,6 +24,7 @@ const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils
  * @typedef {import('@babel/traverse').Node} BabelNode
  * @typedef {import('@babel/types').TaggedTemplateExpression} TaggedTemplateExpression
  * @typedef {{setDirty: (dirty: boolean) => void}} Options
+ */
 
 /**
  * 提取 config 文件
@@ -108,6 +110,8 @@ function configExtra(babel) {
 module.exports = async function configMigrate() {
   const files = await getAllComponents()
 
+  console.log('正在提取 config 配置: \n\n ')
+
   for (const file of files) {
     let dirty = false
     const babelOption = {
@@ -123,6 +127,11 @@ module.exports = async function configMigrate() {
       ],
     }
 
-    await transformFile(file, babelOption, { shouldWrite: () => dirty })
+    try {
+      await transformFile(file, babelOption, { shouldWrite: () => dirty })
+      console.log(chalk.default.green('已提取: ') + file)
+    } catch (err) {
+      console.log(chalk.default.red('提取失败, 请手动修复问题: ') + file, err.message)
+    }
   }
 }

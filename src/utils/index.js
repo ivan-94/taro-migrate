@@ -2,7 +2,7 @@ const debug = require('debug')('taro-migrate')
 const { execSync } = require('child_process')
 const path = require('path')
 const glob = require('glob')
-const { ROOT } = require('./config')
+const { ROOT, JSX_EXT, SCRIPT_EXT } = require('./config')
 
 /**
  * 是否应该使用 yarn
@@ -42,16 +42,17 @@ function hasDep(pkg, dep) {
 }
 
 /**
- * 获取所有 tsx、jsx 文件
+ * @param {string[]} exts
+ *
  * @returns {Promise<string[]>}
  */
-async function getAllComponents() {
+async function getAllFiles(exts) {
   return new Promise((res, rej) => {
-    const pattern = path.posix.join(ROOT, 'src/**/*.@(jsx|tsx)')
-    debug('Get all components: ' + pattern)
+    const pattern = path.posix.join(ROOT, `src/**/*@(${exts.join('|')})`)
+    debug('Get all files: ' + pattern)
     glob(pattern, { absolute: true }, (err, matches) => {
       if (err != null) {
-        debug('Get all components error: ' + err.message)
+        debug('Get all files error: ' + err.message)
         rej(err)
       } else {
         res(matches)
@@ -60,10 +61,26 @@ async function getAllComponents() {
   })
 }
 
+/**
+ * 获取所有 tsx、jsx 文件
+ */
+async function getAllComponents() {
+  return getAllFiles(JSX_EXT)
+}
+
+/**
+ * 获取所有脚本文件
+ * @returns
+ */
+async function getAllScripts() {
+  return getAllFiles(SCRIPT_EXT)
+}
+
 module.exports = {
   shouldUseYarn,
   execCommand,
   readPackageJSON,
   hasDep,
   getAllComponents,
+  getAllScripts,
 }
