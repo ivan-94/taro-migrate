@@ -130,7 +130,6 @@ async function prettierCode(code) {
  */
 async function writeAndPrettierFile(path, code) {
   const formatted = await prettierCode(code)
-  console.log(path, formatted)
   await writeFile(path, formatted)
 }
 
@@ -142,7 +141,6 @@ async function writeAndPrettierFile(path, code) {
 async function writeASTToFile(path, ast) {
   const code = generator.default(ast, DEFAULT_BABEL_GENERATOR_OPTIONS)
   const formatted = await prettierCode(code.code)
-  console.log(path, formatted)
   await writeFile(path, formatted)
 }
 

@@ -5,7 +5,6 @@ const debug = require('debug')('taro-migrate')
 const { getAllComponents } = require('./utils')
 const pathUtils = require('path')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
-const { writeFile } = require('./utils/file')
 
 /**
  * @template T
@@ -40,13 +39,21 @@ function configExtra(babel) {
             return
           }
 
+          const node = /** @type {BabelNode} */ (state.value)
+          let preval = false
+
+          // preval
+          if (t.isTaggedTemplateExpression(node) && t.isIdentifier(node.tag) && node.tag.name === 'preval') {
+            preval = true
+          }
+
           const filename = state.filename
           const dir = pathUtils.dirname(filename)
           const base = pathUtils.basename(filename, pathUtils.extname(filename))
           const configFilePath = pathUtils.join(dir, base + '.config.ts')
 
           // preval 文件处理
-          if (state.preval) {
+          if (preval) {
             const tagExp = /** @type {TaggedTemplateExpression} */ (state.value)
             const raw = tagExp.quasi.quasis[0].value.raw
             const prevalPath = pathUtils.join(dir, base + '.preval.js')
@@ -62,23 +69,37 @@ function configExtra(babel) {
           }
         },
       },
+      // 类组件
       ClassProperty(path, state) {
         const node = path.node
         if (t.isIdentifier(node.key) && node.key.name === 'config') {
           // 包含配置文件
-          // preval
-          if (
-            t.isTaggedTemplateExpression(node.value) &&
-            t.isIdentifier(node.value.tag) &&
-            node.value.tag.name === 'preval'
-          ) {
-            state.preval = true
-          }
-
           state.value = node.value
           path.remove()
           state.opts.setDirty(true)
         }
+      },
+      // 函数式组件
+      ExpressionStatement(path, state) {
+        // 底层语句
+        if (!path.parentPath.isProgram() || !path.get('expression').isAssignmentExpression()) {
+          return
+        }
+
+        const assignMember = path.get('expression.left')
+        const assignValue = path.get('expression.right')
+        if (
+          Array.isArray(assignMember) ||
+          Array.isArray(assignValue) ||
+          !assignMember.getSource().endsWith('.config')
+        ) {
+          return
+        }
+
+        // 找到了
+        state.value = assignValue.node
+        path.remove()
+        state.opts.setDirty(true)
       },
     },
   }
