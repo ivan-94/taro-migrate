@@ -1,11 +1,12 @@
 // @ts-check
 
 const { transformAsync } = require('@babel/core')
+const generator = require('@babel/generator')
 const prettier = require('prettier')
 // const postcss = require('postcss')
 const { getPrettierOptions } = require('./prettier')
 const { readFile, writeFile } = require('./file')
-const { DEFAULT_BABEL_TRANSFORM_OPTIONS } = require('./config')
+const { DEFAULT_BABEL_TRANSFORM_OPTIONS, DEFAULT_BABEL_GENERATOR_OPTIONS } = require('./config')
 const diff = require('diff')
 const chalk = getDefault(require('chalk'))
 
@@ -18,6 +19,7 @@ function getDefault(module) {
 }
 
 /**
+ * @typedef {import('@babel/core').Node } BabelNode
  * @typedef {import('@babel/core').TransformOptions} TransformOptions
  * @typedef {import('@babel/core').BabelFileResult} BabelFileResult
  */
@@ -75,7 +77,7 @@ function diffFile(input, output) {
  * @returns {Promise<{formated: string, diff?: string, changed?: boolean} | null>} 只有开启 diff 才有 diff和changed返回
  */
 async function transformFile(file, babelOpts = {}, options = {}) {
-  options = { dryrun: true, diff: false, ...options }
+  options = { dryrun: false, diff: false, ...options }
   const code = await readFile(file)
 
   if (options.filter) {
@@ -92,13 +94,12 @@ async function transformFile(file, babelOpts = {}, options = {}) {
   }
 
   // 格式化输出
-  const prettierOptions = { ...(await getPrettierOptions()), parser: 'babel-ts' }
-  const formatedOuput = prettier.format(res.code, prettierOptions)
+  const formatedOuput = await prettierCode(res.code)
   let diffString = ''
   let isChanged = false
 
   if (options.diff) {
-    const formatedInput = prettier.format(code, prettierOptions)
+    const formatedInput = await prettierCode(code)
     const result = diffFile(formatedInput, formatedOuput)
     diffString = result.diffString
     isChanged = result.isChanged
@@ -112,6 +113,42 @@ async function transformFile(file, babelOpts = {}, options = {}) {
   return { formated: formatedOuput, diff: diffString, changed: isChanged }
 }
 
+/**
+ * 格式化代码
+ * @param {string} code
+ */
+async function prettierCode(code) {
+  const prettierOptions = { ...(await getPrettierOptions()), parser: 'babel-ts' }
+  const formatedOuput = prettier.format(code, prettierOptions)
+  return formatedOuput
+}
+
+/**
+ * 美化并写入文件
+ * @param {string} path
+ * @param {string} code
+ */
+async function writeAndPrettierFile(path, code) {
+  const formatted = await prettierCode(code)
+  console.log(path, formatted)
+  await writeFile(path, formatted)
+}
+
+/**
+ * 写入文件
+ * @param {string} path
+ * @param {BabelNode} ast
+ */
+async function writeASTToFile(path, ast) {
+  const code = generator.default(ast, DEFAULT_BABEL_GENERATOR_OPTIONS)
+  const formatted = await prettierCode(code.code)
+  console.log(path, formatted)
+  await writeFile(path, formatted)
+}
+
 module.exports = {
   transformFile,
+  writeASTToFile,
+  writeAndPrettierFile,
+  prettierCode,
 }
