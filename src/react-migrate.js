@@ -5,6 +5,7 @@ const debug = require('debug')('taro-migrate')
 const chalk = require('chalk')
 const { getAllComponents } = require('./utils')
 const pathUtils = require('path')
+const { addNamedImport } = require('./utils/babel')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
 
 /**
@@ -13,7 +14,7 @@ const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils
  */
 /**
  * @template O
- * @typedef {import('@babel/core').PluginPass & {opts: O}} State
+ * @typedef {import('@babel/core').PluginPass & {opts: O, addGetCurrentInstanceImport: boolean}} State
  */
 /**
  * @template T
@@ -23,20 +24,28 @@ const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils
  * @typedef {import('@babel/core')} Babel
  * @typedef {import('@babel/traverse').Node} BabelNode
  * @typedef {import('@babel/types').TaggedTemplateExpression} TaggedTemplateExpression
+ * @typedef {import('@babel/types').BlockStatement} BlockStatement
  * @typedef {{setDirty: (dirty: boolean) => void}} Options
+ * @typedef {{target: string, message: string}} RewriteDesc
  */
 
 /**
- * @type {{[key: string]: {target: string, message: string}}}
+ * @type Map<string, RewriteDesc>}
  */
-const LIFE_CYCLE_REWRITE = {
-  componentWillMount: {
-    target: 'UNSAFE_componentWillMount',
-    message: '请尽快迁移为 componentDidMount 或 constructor',
-  },
-  componentWillReceiveProps: { target: 'UNSAFE_componentWillReceiveProps', message: '请尽快迁移为 componentDidUpdate' },
-  componentWillUpdate: { target: 'UNSAFE_componentWillUpdate', message: '请尽快迁移为 componentDidUpdate' },
-}
+const LIFE_CYCLE_REWRITE = new Map([
+  [
+    'componentWillMount',
+    {
+      target: 'UNSAFE_componentWillMount',
+      message: '请尽快迁移为 componentDidMount 或 constructor',
+    },
+  ],
+  [
+    'componentWillReceiveProps',
+    { target: 'UNSAFE_componentWillReceiveProps', message: '请尽快迁移为 componentDidUpdate' },
+  ],
+  ['componentWillUpdate', { target: 'UNSAFE_componentWillUpdate', message: '请尽快迁移为 componentDidUpdate' }],
+])
 
 /**
  * React API 重写
@@ -48,7 +57,47 @@ function reactMigratePlugin(babel) {
   return {
     visitor: {
       Program: {
-        exit(path, state) {},
+        exit(path, state) {
+          if (state.addGetCurrentInstanceImport) {
+            addNamedImport(path, '@tarojs/taro', 'getCurrentInstance')
+          }
+        },
+      },
+
+      /**
+       * $router 处理
+       */
+      ClassDeclaration(path, state) {
+        let hasRouter = false
+        path.traverse({
+          MemberExpression(subPath) {
+            if (
+              subPath.get('object').isThisExpression() &&
+              t.isIdentifier(subPath.node.property) &&
+              subPath.node.property.name === '$router'
+            ) {
+              hasRouter = true
+              subPath.stop()
+            }
+          },
+        })
+
+        if (hasRouter) {
+          // 添加 $router getter
+          const getter = t.classMethod(
+            'get',
+            t.identifier('$router'),
+            [],
+            /** @type {BlockStatement}*/ (template.ast(`{return getCurrentInstance().router}`))
+          )
+          const body = path.get('body').node
+          body.body.unshift(getter)
+
+          // 添加导入
+          state.addGetCurrentInstanceImport = true
+
+          state.opts.setDirty(true)
+        }
       },
 
       /**
@@ -56,10 +105,11 @@ function reactMigratePlugin(babel) {
        */
       ClassMethod(path, state) {
         const node = path.node
-        if (t.isIdentifier(node.key) && node.key.name in LIFE_CYCLE_REWRITE) {
+        if (t.isIdentifier(node.key) && LIFE_CYCLE_REWRITE.has(node.key.name)) {
           const name = node.key.name
-          node.key.name = LIFE_CYCLE_REWRITE[name].target
-          path.addComment('leading', LIFE_CYCLE_REWRITE[name].message, false)
+          const target = /** @type {RewriteDesc} */ (LIFE_CYCLE_REWRITE.get(name))
+          node.key.name = target.target
+          path.addComment('leading', target.message, false)
           state.opts.setDirty(true)
         }
       },
@@ -93,7 +143,7 @@ module.exports = async function reactMigrate() {
       await transformFile(file, babelOption, { shouldWrite: () => dirty })
       console.log(chalk.default.green('已重写: ') + file)
     } catch (err) {
-      console.log(chalk.default.red('重写失败, 请手动修复问题: ') + file, err.message)
+      console.log(chalk.default.red('重写失败, 请手动修复问题: ') + file, err.message, err.stack)
     }
   }
 }
