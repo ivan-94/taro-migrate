@@ -1,11 +1,14 @@
 /**
  * 配置文件升级
  */
+const fs = require('fs')
 const debug = require('debug')('taro-migrate')
 const chalk = require('chalk')
-const { getAllComponents } = require('./utils')
+const processor = require('./process')
 const pathUtils = require('path')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
+const { TARO_CONFIG } = require('./utils/config')
+const { removeProperties, getProperty } = require('./utils/babel')
 
 /**
  * @template T
@@ -22,7 +25,9 @@ const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils
 /**
  * @typedef {import('@babel/core')} Babel
  * @typedef {import('@babel/traverse').Node} BabelNode
+ * @typedef {import('@babel/types').ObjectExpression} ObjectExpression
  * @typedef {import('@babel/types').TaggedTemplateExpression} TaggedTemplateExpression
+ * @typedef {import('@babel/types').BlockStatement} BlockStatement
  * @typedef {{setDirty: (dirty: boolean) => void}} Options
  */
 
@@ -108,31 +113,87 @@ function configExtra(babel) {
   }
 }
 
-module.exports = async function configMigrate() {
-  const files = await getAllComponents()
+/**
+ * Taro 构建配置迁移
+ */
+async function taroBuildConfigMigrate() {
+  if (!fs.existsSync(TARO_CONFIG)) {
+    return
+  }
 
-  console.log('正在提取 config 配置: \n\n ')
+  return transformFile(TARO_CONFIG, {
+    plugins: [
+      /**
+       * @param {Babel} babel
+       * @returns {PluginObj<Options>}
+       */
+      function plugin(babel) {
+        const { types: t, template } = babel
+        return {
+          visitor: {
+            VariableDeclarator(path) {
+              if (t.isIdentifier(path.node.id) && path.node.id.name === 'config') {
+                const config = /** @type {NodePath<ObjectExpression>} */ (path.get('init'))
+                removeProperties(config, ['plugins', 'babel', 'uglify', 'csso', 'terser'])
 
-  for (const file of files) {
-    let dirty = false
-    const babelOption = {
-      plugins: [
-        [
-          configExtra,
-          {
-            setDirty: (value) => {
-              dirty = value
+                // @ts-ignore
+                const mini = /** @type {NodePath<ObjectExpression>} */ (getProperty(config, 'mini').get('value'))
+                removeProperties(mini, [
+                  'commonChunks',
+                  'webpackChain',
+                  'compile',
+                  'imageUrlLoaderOption',
+                  'fontUrlLoaderOption',
+                ])
+
+                mini.node.properties.unshift(
+                  t.objectMethod(
+                    'method',
+                    t.identifier('webpackChain'),
+                    [t.identifier('config')],
+                    /** @type {BlockStatement}*/ (template.ast(`{
+                    if (analyzeMode) {
+                      config.plugin('analyzer').use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin, []);
+                    }
+                  }`))
+                  )
+                )
+
+                // @ts-ignore
+                const h5 = /** @type {NodePath<ObjectExpression>} */ (getProperty(config, 'h5').get('value'))
+                removeProperties(h5, ['webpackChain'])
+              }
             },
           },
-        ],
-      ],
-    }
+        }
+      },
+    ],
+  })
+}
 
-    try {
-      await transformFile(file, babelOption, { shouldWrite: () => dirty })
-      console.log(chalk.default.green('已提取: ') + file)
-    } catch (err) {
-      console.log(chalk.default.red('提取失败, 请手动修复问题: ') + file, err.message)
-    }
+/**
+ * 配置文件提取
+ * @param {string} file
+ */
+async function pageConfigMigrate(file) {
+  let dirty = false
+  const babelOption = {
+    plugins: [
+      [
+        configExtra,
+        {
+          setDirty: (value) => {
+            dirty = value
+          },
+        },
+      ],
+    ],
   }
+
+  return transformFile(file, babelOption, { shouldWrite: () => dirty })
+}
+
+module.exports = async function configMigrate() {
+  processor.addTask('升级 Taro 构建配置', taroBuildConfigMigrate)
+  processor.addProcess(processor.COMPONENT_REGEXP, '页面配置提取', pageConfigMigrate)
 }

@@ -102,7 +102,49 @@ function addDefaultImport(path, source, name, force) {
   }
 }
 
+/**
+ *
+ * @param {NodePath<ObjectExpression>} objExp
+ * @param {string[]} keys
+ */
+function removeProperties(objExp, keys) {
+  objExp.get('properties').forEach((property) => {
+    if ((t.isObjectProperty(property.node) || t.isObjectMethod(property.node)) && t.isIdentifier(property.node.key)) {
+      if (keys.includes(property.node.key.name)) {
+        property.remove()
+      }
+    }
+  })
+}
+
+/**
+ *
+ * @param {NodePath<ObjectExpression>} objExp
+ * @param {string} key
+ */
+function getProperty(objExp, key) {
+  for (const property of objExp.get('properties')) {
+    if (t.isObjectProperty(property.node) && t.isIdentifier(property.node.key)) {
+      if (key === property.node.key.name) {
+        return property
+      }
+    }
+  }
+}
+
+/**
+ *
+ * @param {NodePath<ObjectExpression>} objExp
+ * @param {string} key
+ * @param {BabelNode} value
+ */
+function setProperty(objExp, key, value) {
+  // TODO:
+}
+
 module.exports = {
   addNamedImport,
+  getProperty,
   addDefaultImport,
+  removeProperties,
 }

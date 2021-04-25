@@ -1,4 +1,5 @@
 const { shouldUseYarn } = require('./utils')
+const processor = require('./process')
 const upgradeDependencies = require('./dependencies-upgrade')
 const configMigrate = require('./config-migrate')
 const importRewrite = require('./import-rewrite')
@@ -9,8 +10,12 @@ if (!shouldUseYarn()) {
   process.exit(-1)
 }
 
+// TODO: 检查是否在 taro 项目根目录中执行
+
+configMigrate()
 // 升级依赖
 // upgradeDependencies();
-// configMigrate()
 // importRewrite()
-reactMigrate()
+// reactMigrate()
+
+processor.run()
