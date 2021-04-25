@@ -83,15 +83,24 @@ function reactMigratePlugin(babel) {
         })
 
         if (hasRouter) {
+          // 添加 $Current
+          // 最好以 属性的形式存在，在组件挂载的过程中确定当前页面比较靠谱，不建议动态去获取
+          const currentProperty = t.classProperty(
+            t.identifier('$Current'),
+            t.callExpression(t.identifier('getCurrentInstance'), [])
+          )
+
           // 添加 $router getter
           const getter = t.classMethod(
             'get',
             t.identifier('$router'),
             [],
-            /** @type {BlockStatement}*/ (template.ast(`{return getCurrentInstance().router}`))
+            /** @type {BlockStatement}*/ (template.ast(`{return this.$Current.router}`))
           )
+
           const body = path.get('body').node
           body.body.unshift(getter)
+          body.body.unshift(currentProperty)
 
           // 添加导入
           state.addGetCurrentInstanceImport = true
@@ -141,7 +150,9 @@ module.exports = async function reactMigrate() {
 
     try {
       await transformFile(file, babelOption, { shouldWrite: () => dirty })
-      console.log(chalk.default.green('已重写: ') + file)
+      if (dirty) {
+        console.log(chalk.default.green('已重写: ') + file)
+      }
     } catch (err) {
       console.log(chalk.default.red('重写失败, 请手动修复问题: ') + file, err.message, err.stack)
     }

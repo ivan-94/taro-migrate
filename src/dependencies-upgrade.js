@@ -1,7 +1,10 @@
 /**
  * 依赖升级
  */
+const fs = require('fs')
+const path = require('path')
 const { execCommand, readPackageJSON, hasDep } = require('./utils')
+const { ROOT } = require('./utils/config')
 
 const TARO_VERSION = 'next'
 const PKG = readPackageJSON()
@@ -27,7 +30,6 @@ const DEPENDENCIES_TO_REMOVE = [
   '@tarojs/taro-swan',
   '@tarojs/taro-tt',
   '@tarojs/taro-weapp',
-
 
   // Babel 6.x
   'babel-runtime',
@@ -152,6 +154,9 @@ const DEPENDENCIES_TO_UPGRADE = [
   'react-dom',
   'redux',
   'react-redux', // 新增
+
+  // 平台层
+  'wk-taro-platform',
 ]
 
 /**
@@ -203,7 +208,16 @@ function addDependencies() {
   console.log('\n\n')
 }
 
+function addConfig() {
+  console.log('正在添加配置文件')
+  const base = path.join(__dirname, './template')
+  ;['.eslintrc.js', 'babel.config.js'].forEach((name) => {
+    fs.copyFileSync(path.join(base, name), path.join(ROOT, name))
+  })
+}
+
 module.exports = function upgradeDependencies() {
   removeOldDependencies()
   addDependencies()
+  addConfig()
 }

@@ -28,6 +28,7 @@ const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils
 
 /**
  * 提取 config 文件
+ * TODO: 页面文件避免有 config.ts
  * @param {Babel} babel
  * @returns {PluginObj<Options>}
  */
