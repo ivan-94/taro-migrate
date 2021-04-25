@@ -21,6 +21,19 @@ async function readdir(p) {
 }
 
 /**
+ * 文件是否存在
+ * @param {string} path
+ */
+async function isExists(path) {
+  try {
+    await fs.access(path);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+/**
  * 文件读取
  * @param {string} file
  */
@@ -50,4 +63,5 @@ module.exports = {
   readFile,
   writeFile,
   readdir,
+  isExists,
 };

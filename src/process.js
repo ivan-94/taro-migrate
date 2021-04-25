@@ -9,7 +9,7 @@ const messageBox = {}
  */
 const processor = new Map()
 /**
- * @type {Array<[string, Function]>}
+ * @type {Array<[string, Function, Function | undefined, Function | undefined]>}
  */
 const tasks = []
 
@@ -40,21 +40,29 @@ module.exports = {
   /**
    * @param {string} name
    * @param {Function} task
+   * @param {Function} [onSuccess]
+   * @param {(err: Error) => void} [onFailed]
    */
-  addTask(name, task) {
-    tasks.push([name, task])
+  addTask(name, task, onSuccess, onFailed) {
+    tasks.push([name, task, onSuccess, onFailed])
   },
 
   async run() {
     // 运行任务
-    tasks.forEach(async ([name, task]) => {
+    tasks.forEach(async ([name, task, onSuccess, onFailed]) => {
       try {
         await task()
         console.log(`运行 ${name} 成功`)
+        if (onSuccess) {
+          onSuccess()
+        }
       } catch (err) {
         const message = `运行 ${name} 失败, 请手动修改：${err.message}`
         console.error(message)
         this.addMessage(name, message)
+        if (onFailed) {
+          onFailed(err)
+        }
       }
     })
 

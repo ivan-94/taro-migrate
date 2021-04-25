@@ -3,6 +3,7 @@ const path = require('path')
 const ROOT = process.cwd()
 
 const TARO_CONFIG = path.join(ROOT, 'config/index.js')
+const PLATFORM_DIR =path.join(ROOT, './src/wxat-common/utils/platform')
 
 const DEFAULT_BABEL_GENERATOR_OPTIONS = {
   retainLines: true,
@@ -36,7 +37,9 @@ module.exports = {
   DEFAULT_BABEL_TRANSFORM_OPTIONS,
   DEFAULT_BABEL_GENERATOR_OPTIONS,
 
+  PLATFORM_DIR,
   TARO_CONFIG,
+
   CSS_EXT,
   SCSS_EXT,
   JS_EXT,
