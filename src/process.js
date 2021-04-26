@@ -1,3 +1,4 @@
+const fs = require('fs')
 const chalk = require('chalk').default
 const { getAllScripts } = require('./utils')
 
@@ -91,6 +92,19 @@ module.exports = {
       }
     }
 
-    // TODO: 输出到错误日志
+    // 输出到错误日志
+    const errorFiles = Object.keys(messageBox)
+    if (errorFiles.length) {
+      let content = '以下问题请手动修复：\n\n'
+      errorFiles.forEach((file) => {
+        content += '\n' + file + ': \n\n'
+        content += messageBox[file].map((i) => '\t' + i).join('\n')
+        content += '\n\n'
+      })
+
+      fs.writeFileSync('migrate.todo', content)
+
+      console.log('\n\n' + chalk.red('需要手动修改的问题已输出到 migrate.todo') + '\n\n')
+    }
   },
 }
