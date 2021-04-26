@@ -1,3 +1,4 @@
+const chalk = require('chalk').default
 const { getAllScripts } = require('./utils')
 
 /**
@@ -5,7 +6,7 @@ const { getAllScripts } = require('./utils')
  */
 const messageBox = {}
 /**
- * @type {Map<RegExp, [string, (file: string) => Promise<void>>]}
+ * @type {Map<RegExp, Array<[string, (file: string) => Promise<void>]>>}
  */
 const processor = new Map()
 /**
@@ -22,7 +23,12 @@ module.exports = {
    * @param {(file: string) => Promise<any>} handler
    */
   addProcess(reg, name, handler) {
-    processor.set(reg, [name, handler])
+    const map = processor.get(reg)
+    if (map) {
+      map.push([name, handler])
+    } else {
+      processor.set(reg, [[name, handler]])
+    }
   },
 
   /**
@@ -52,13 +58,13 @@ module.exports = {
     tasks.forEach(async ([name, task, onSuccess, onFailed]) => {
       try {
         await task()
-        console.log(`运行 ${name} 成功`)
+        console.log(chalk.green(`- 运行 ${name} 成功`))
         if (onSuccess) {
           onSuccess()
         }
       } catch (err) {
-        const message = `运行 ${name} 失败, 请手动修改：${err.message}`
-        console.error(message)
+        const message = `- 运行 ${name} 失败, 请手动修改：${err.message}`
+        console.error(chalk.red(message))
         this.addMessage(name, message)
         if (onFailed) {
           onFailed(err)
@@ -68,15 +74,18 @@ module.exports = {
 
     const all = await getAllScripts()
     for (const file of all) {
-      for (const [reg, [name, handler]] of processor) {
+      console.log(`* 正在处理:  ${file}`)
+      for (const [reg, tasks] of processor) {
         if (file.match(reg)) {
-          try {
-            await handler(file)
-            console.log(`运行 ${name}(${file}) 成功`)
-          } catch (err) {
-            const message = `运行 ${name}(${file}) 失败, 请手动修改：${err.message}`
-            console.error(message)
-            this.addMessage(file, message)
+          for (const [name, handler] of tasks) {
+            try {
+              await handler(file)
+              console.log('\t' + chalk.green(`执行 ${name} 成功`))
+            } catch (err) {
+              const message = `执行 ${name} 失败, 请手动修改：${err.message}`
+              console.error('\t' + chalk.red(message))
+              this.addMessage(file, message)
+            }
           }
         }
       }

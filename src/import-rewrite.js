@@ -1,11 +1,9 @@
 /**
  * 导入重写
  */
-const debug = require('debug')('taro-migrate')
-const chalk = require('chalk')
-const { getAllScripts } = require('./utils')
 const { transformFile } = require('./utils/transform')
 const { addNamedImport, addDefaultImport } = require('./utils/babel')
+const processor = require('./process')
 
 /**
  * @template T
@@ -163,37 +161,28 @@ function importRewritePlugin(babel) {
   }
 }
 
-module.exports = async function importRewrite() {
-  const files = await getAllScripts()
-
-  debug('所有待重写的文件', files)
-
-  if (!files.length) {
-    return
-  }
-
-  console.log('正在重写导入语句: \n\n ')
-
-  for (const file of files) {
-    let dirty = false
-    const babelOption = {
-      plugins: [
-        [
-          importRewritePlugin,
-          {
-            setDirty: (value) => {
-              dirty = value
-            },
+/**
+ * @param {string} file
+ * @returns
+ */
+async function importRewrite(file) {
+  let dirty = false
+  const babelOption = {
+    plugins: [
+      [
+        importRewritePlugin,
+        {
+          setDirty: (value) => {
+            dirty = value
           },
-        ],
+        },
       ],
-    }
-
-    try {
-      await transformFile(file, babelOption, { shouldWrite: () => dirty })
-      console.log(chalk.default.green('已重写: ') + file)
-    } catch (err) {
-      console.log(chalk.default.red('重写失败, 请手动修复问题: ') + file, err.message)
-    }
+    ],
   }
+
+  return transformFile(file, babelOption, { shouldWrite: () => dirty })
+}
+
+module.exports = () => {
+  processor.addProcess(processor.ALL_REGEXP, '转换 API 导入', importRewrite)
 }

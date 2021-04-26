@@ -67,6 +67,9 @@ async function replaceFiles() {
 module.exports = function () {
   processor.addTask('废弃平台代码', removeFiles)
   processor.addTask('替换平台代码', replaceFiles, () => {
-    processor.addMessage(path.join(PLATFORM_DIR, 'WKPage.ts'), '页面全局生命周期监听方式改变，需要手动迁移旧代码')
+    processor.addMessage(
+      path.join(PLATFORM_DIR, 'WKPage.ts'),
+      'WKPage 页面全局生命周期监听方式改变，需要手动迁移旧代码'
+    )
   })
 }

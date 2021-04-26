@@ -13,11 +13,12 @@ if (!shouldUseYarn()) {
 
 // TODO: 检查是否在 taro 项目根目录中执行
 
-// platformMigrate()
-// configMigrate()
 // 升级依赖
-// upgradeDependencies();
-// importRewrite()
+upgradeDependencies()
+// 平台代码升级
+platformMigrate()
+configMigrate()
+importRewrite()
 reactMigrate()
 
 processor.run()

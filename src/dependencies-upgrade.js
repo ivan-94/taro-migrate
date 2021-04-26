@@ -3,6 +3,7 @@
  */
 const fs = require('fs')
 const path = require('path')
+const processor = require('./process')
 const { execCommand, readPackageJSON, hasDep } = require('./utils')
 const { ROOT } = require('./utils/config')
 
@@ -172,7 +173,6 @@ function ignoreUnExistedDeps(list) {
 function removeOldDependencies() {
   const depsToRemove = ignoreUnExistedDeps(DEPENDENCIES_TO_REMOVE)
   if (depsToRemove.length) {
-    console.log('正在移除废弃依赖: \n')
     execCommand(`yarn remove ${depsToRemove.join(' ')}`)
     console.log('\n\n')
   }
@@ -202,14 +202,12 @@ function getDeps(list) {
 }
 
 function addDependencies() {
-  console.log('正在升级依赖: \n')
   execCommand(`yarn add ${getDeps(DEV_DEPENDENCIES_TO_UPGRADE)} -D`)
   execCommand(`yarn add ${getDeps(DEPENDENCIES_TO_UPGRADE)}`)
   console.log('\n\n')
 }
 
 function addConfig() {
-  console.log('正在添加配置文件')
   const base = path.join(__dirname, './template')
   ;['.eslintrc.js', 'babel.config.js'].forEach((name) => {
     fs.copyFileSync(path.join(base, name), path.join(ROOT, name))
@@ -220,4 +218,12 @@ module.exports = function upgradeDependencies() {
   removeOldDependencies()
   addDependencies()
   addConfig()
+
+  processor.addTask('移除旧模块', removeOldDependencies, undefined, () => {
+    process.exit()
+  })
+  processor.addTask('升级依赖', addDependencies, undefined, () => {
+    process.exit()
+  })
+  processor.addTask('添加配置文件', addConfig)
 }
