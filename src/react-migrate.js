@@ -1,12 +1,9 @@
 /**
  * React API 重写
  */
-const debug = require('debug')('taro-migrate')
-const chalk = require('chalk')
-const { getAllComponents } = require('./utils')
-const pathUtils = require('path')
-const { addNamedImport } = require('./utils/babel')
-const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
+const { addNamedImport, addDefaultImport } = require('./utils/babel')
+const { transformFile } = require('./utils/transform')
+const processor = require('./process')
 
 /**
  * @template T
@@ -14,7 +11,7 @@ const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils
  */
 /**
  * @template O
- * @typedef {import('@babel/core').PluginPass & {opts: O, addGetCurrentInstanceImport: boolean}} State
+ * @typedef {import('@babel/core').PluginPass & {opts: O, addGetCurrentInstanceImport: boolean, addReactImport: boolean}} State
  */
 /**
  * @template T
@@ -25,6 +22,8 @@ const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils
  * @typedef {import('@babel/traverse').Node} BabelNode
  * @typedef {import('@babel/types').TaggedTemplateExpression} TaggedTemplateExpression
  * @typedef {import('@babel/types').BlockStatement} BlockStatement
+ * @typedef {import('@babel/types').FunctionExpression} FunctionExpression
+ * @typedef {import('@babel/types').Decorator} Decorator
  * @typedef {{setDirty: (dirty: boolean) => void}} Options
  * @typedef {{target: string, message: string}} RewriteDesc
  */
@@ -61,51 +60,94 @@ function reactMigratePlugin(babel) {
           if (state.addGetCurrentInstanceImport) {
             addNamedImport(path, '@tarojs/taro', 'getCurrentInstance')
           }
+
+          if (state.addReactImport) {
+            addDefaultImport(path, 'react', 'React')
+          }
         },
       },
 
-      /**
-       * $router 处理
-       */
       ClassDeclaration(path, state) {
-        let hasRouter = false
-        path.traverse({
-          MemberExpression(subPath) {
-            if (
-              subPath.get('object').isThisExpression() &&
-              t.isIdentifier(subPath.node.property) &&
-              subPath.node.property.name === '$router'
-            ) {
-              hasRouter = true
-              subPath.stop()
-            }
-          },
-        })
+        {
+          /**
+           * $router 处理
+           */
+          let hasRouter = false
+          path.traverse({
+            MemberExpression(subPath) {
+              if (
+                subPath.get('object').isThisExpression() &&
+                t.isIdentifier(subPath.node.property) &&
+                subPath.node.property.name === '$router'
+              ) {
+                hasRouter = true
+                subPath.stop()
+              }
+            },
+          })
 
-        if (hasRouter) {
-          // 添加 $Current
-          // 最好以 属性的形式存在，在组件挂载的过程中确定当前页面比较靠谱，不建议动态去获取
-          const currentProperty = t.classProperty(
-            t.identifier('$Current'),
-            t.callExpression(t.identifier('getCurrentInstance'), [])
-          )
+          if (hasRouter) {
+            // 添加 $Current
+            // 最好以 属性的形式存在，在组件挂载的过程中确定当前页面比较靠谱，不建议动态去获取
+            const currentProperty = t.classProperty(
+              t.identifier('$Current'),
+              t.callExpression(t.identifier('getCurrentInstance'), [])
+            )
 
-          // 添加 $router getter
-          const getter = t.classMethod(
-            'get',
-            t.identifier('$router'),
-            [],
-            /** @type {BlockStatement}*/ (template.ast(`{return this.$Current.router}`))
-          )
+            // 添加 $router getter
+            const getter = t.classMethod(
+              'get',
+              t.identifier('$router'),
+              [],
+              /** @type {BlockStatement}*/ (template.ast(`{return this.$Current.router}`))
+            )
 
-          const body = path.get('body').node
-          body.body.unshift(getter)
-          body.body.unshift(currentProperty)
+            const body = path.get('body').node
+            body.body.unshift(getter)
+            body.body.unshift(currentProperty)
 
-          // 添加导入
-          state.addGetCurrentInstanceImport = true
+            // 添加导入
+            state.addGetCurrentInstanceImport = true
 
-          state.opts.setDirty(true)
+            state.opts.setDirty(true)
+          }
+        }
+        {
+          /**
+           * 注解排序
+           */
+          const node = path.node
+          if (node.decorators && node.decorators.length) {
+            /**
+             * @type {Decorator[]}
+             */
+            const decorators = []
+            /**
+             * @type {Decorator[]}
+             */
+            const prefix = []
+            /**
+             * @type {Decorator[]}
+             */
+            const suffix = []
+            node.decorators.forEach((d) => {
+              if (t.isIdentifier(d.expression) && ['WKPage', 'WKComponent'].includes(d.expression.name)) {
+                suffix.push(d)
+              } else if (
+                t.isCallExpression(d.expression) &&
+                t.isIdentifier(d.expression.callee) &&
+                d.expression.callee.name === 'connect'
+              ) {
+                prefix.push(d)
+              } else {
+                decorators.push(d)
+              }
+            })
+
+            node.decorators = [...prefix, ...decorators, ...suffix]
+
+            state.opts.setDirty(true)
+          }
         }
       },
 
@@ -122,39 +164,61 @@ function reactMigratePlugin(babel) {
           state.opts.setDirty(true)
         }
       },
+
+      /**
+       * getRef() 迁移
+       */
+      CallExpression(path, state) {
+        let idx
+        if (
+          t.isIdentifier(path.node.callee) &&
+          path.node.callee.name === 'useImperativeHandle' &&
+          (idx = path.node.arguments.findIndex(
+            (arg) => t.isCallExpression(arg) && t.isIdentifier(arg.callee) && arg.callee.name === 'getRef'
+          )) !== -1
+        ) {
+          // 检测到 getRef()
+          // 替换为 ref
+          path.node.arguments.splice(idx, 1, t.identifier('ref'))
+
+          const func = /** @type {NodePath<FunctionExpression> | null} */ (path.findParent((p) => p.isFunction()))
+          if (func) {
+            func.node.params.push(t.identifier('ref'))
+            const forward = t.callExpression(t.memberExpression(t.identifier('React'), t.identifier('forwardRef')), [
+              func.node,
+            ])
+            func.replaceWith(forward)
+            state.addReactImport = true
+          }
+          state.opts.setDirty(true)
+        }
+      },
     },
   }
 }
 
-module.exports = async function reactMigrate() {
-  const files = await getAllComponents()
-
-  debug('所有组件: ', files)
-
-  console.log('正在重写 React API: \n\n ')
-
-  for (const file of files) {
-    let dirty = false
-    const babelOption = {
-      plugins: [
-        [
-          reactMigratePlugin,
-          {
-            setDirty: (value) => {
-              dirty = value
-            },
+/**
+ *
+ * @param {string} file
+ */
+async function reactMigrate(file) {
+  let dirty = false
+  const babelOption = {
+    plugins: [
+      [
+        reactMigratePlugin,
+        {
+          setDirty: (value) => {
+            dirty = value
           },
-        ],
+        },
       ],
-    }
-
-    try {
-      await transformFile(file, babelOption, { shouldWrite: () => dirty })
-      if (dirty) {
-        console.log(chalk.default.green('已重写: ') + file)
-      }
-    } catch (err) {
-      console.log(chalk.default.red('重写失败, 请手动修复问题: ') + file, err.message, err.stack)
-    }
+    ],
   }
+
+  await transformFile(file, babelOption, { shouldWrite: () => dirty })
+}
+
+module.exports = function () {
+  processor.addProcess(processor.COMPONENT_REGEXP, 'React 用法迁移', reactMigrate)
 }
