@@ -53,6 +53,26 @@ function addNamedImport(path, source, name, local) {
  * @param {NodePath<Program>} path
  * @param {string} source
  * @param {string} name
+ */
+function removeNamedImport(path, source, name) {
+  const importDecl = /** @type {ImportDeclaration | null} */ (path.node.body.find(
+    (d) => t.isImportDeclaration(d) && d.source.value === source
+  ))
+  if (importDecl) {
+    // 查看是否导入
+    const idx = importDecl.specifiers.findIndex(
+      (s) => t.isImportSpecifier(s) && t.isIdentifier(s.imported) && s.imported.name === name
+    )
+    if (idx !== -1) {
+      importDecl.specifiers.splice(idx, 1)
+    }
+  }
+}
+
+/**
+ * @param {NodePath<Program>} path
+ * @param {string} source
+ * @param {string} name
  * @param {boolean} [force]
  */
 function addDefaultImport(path, source, name, force) {
@@ -144,7 +164,8 @@ function setProperty(objExp, key, value) {
 
 module.exports = {
   addNamedImport,
-  getProperty,
   addDefaultImport,
+  removeNamedImport,
+  getProperty,
   removeProperties,
 }

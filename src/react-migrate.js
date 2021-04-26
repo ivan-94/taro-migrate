@@ -1,7 +1,7 @@
 /**
  * React API 重写
  */
-const { addNamedImport, addDefaultImport } = require('./utils/babel')
+const { addNamedImport, addDefaultImport, removeNamedImport } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
 const processor = require('./process')
 
@@ -64,6 +64,8 @@ function reactMigratePlugin(babel) {
           if (state.addReactImport) {
             addDefaultImport(path, 'react', 'React')
           }
+
+          removeNamedImport(path, '@/wxat-common/utils/platform', 'getRef')
         },
       },
 
