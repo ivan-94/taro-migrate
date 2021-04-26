@@ -42,6 +42,15 @@ function hasDep(pkg, dep) {
 }
 
 /**
+ * 获取依赖
+ * @param {any} pkg
+ * @param {string} dep
+ */
+function getDep(pkg, dep) {
+  return pkg && (pkg.dependencies[dep] || pkg.devDependencies[dep])
+}
+
+/**
  * @param {string[]} exts
  *
  * @returns {Promise<string[]>}
@@ -81,6 +90,7 @@ module.exports = {
   execCommand,
   readPackageJSON,
   hasDep,
+  getDep,
   getAllComponents,
   getAllScripts,
 }
