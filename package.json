@@ -2,10 +2,16 @@
   "name": "taro-migrate",
   "version": "0.1.0",
   "description": "Taro 3.x 迁移，兼容性迁移",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "taro-migrate": "bin/taro-migrate"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
