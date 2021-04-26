@@ -9,8 +9,22 @@ const { PLATFORM_DIR } = require('./utils/config')
 const { isExists } = require('./utils/file')
 const { writeAndPrettierFile } = require('./utils/transform')
 
-const FILES_TO_REMOVE = ['react-replace-nerv', 'current.js', 'getRef.ts', 'hooks', 'WKComponent', 'WKPage']
-const FILES_TO_REPLACE = ['WKComponent.ts', 'WKPage.ts', '_safe_style_.ts', '_fixme_with_dataset_.ts']
+const FILES_TO_REMOVE = [
+  'react-replace-nerv',
+  'current.js',
+  'getRef.ts',
+  'hooks',
+  'WKComponent',
+  'WKPage',
+  'createContext',
+]
+const FILES_TO_REPLACE = [
+  'WKComponent.ts',
+  'WKPage.ts',
+  '_safe_style_.ts',
+  '_fixme_with_dataset_.ts',
+  'createContext.ts',
+]
 
 async function removeFiles() {
   const BAK = path.join(PLATFORM_DIR, '.bak')
