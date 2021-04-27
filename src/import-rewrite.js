@@ -2,7 +2,7 @@
  * 导入重写
  */
 const { transformFile } = require('./utils/transform')
-const { addNamedImport, addDefaultImport } = require('./utils/babel')
+const { addNamedImport, addDefaultImport, removeImportSource } = require('./utils/babel')
 const processor = require('./process')
 
 /**
@@ -32,6 +32,9 @@ const SOURCE_REWRITE = {
   '@tarojs/redux': 'react-redux',
 }
 
+const TARO_SOURCE = ['@tarojs/taro', 'nervjs']
+const TARO_NAMESPACE = ['Taro', 'Nerv']
+
 // 可能通过命名导入，也可能通过Taro.* 引用
 const TARO_IMPORT_REWRITE = new Set([
   // hooks
@@ -50,12 +53,20 @@ const TARO_IMPORT_REWRITE = new Set([
   // React API
   'createRef',
   'createContext',
+  'createFactory',
   'createElement',
+  'cloneElement',
+  'isValidElement',
   'memo',
+  'forwardRef',
+  'lazy',
 
   // React class
   'Component',
   'PureComponent',
+  'Fragment',
+  'Suspense',
+  'Children',
 
   // type
   'FunctionComponent',
@@ -96,6 +107,8 @@ function importRewritePlugin(babel) {
             addDefaultImport(path, 'react', 'React', true)
             state.opts.setDirty(true)
           }
+
+          removeImportSource(path, 'nervjs')
         },
       },
       /**
@@ -107,7 +120,7 @@ function importRewritePlugin(babel) {
         if (source in SOURCE_REWRITE) {
           path.node.source = t.stringLiteral(SOURCE_REWRITE[source])
           state.opts.setDirty(true)
-        } else if (source === '@tarojs/taro') {
+        } else if (TARO_SOURCE.includes(source)) {
           // 切换导入语句
           path.traverse({
             ImportSpecifier(subPath) {
@@ -134,7 +147,11 @@ function importRewritePlugin(babel) {
        */
       MemberExpression(path, state) {
         const node = path.node
-        if (!t.isIdentifier(node.object) || !t.isIdentifier(node.property) || node.object.name !== 'Taro') {
+        if (
+          !t.isIdentifier(node.object) ||
+          !t.isIdentifier(node.property) ||
+          !TARO_NAMESPACE.includes(node.object.name)
+        ) {
           return
         }
 
