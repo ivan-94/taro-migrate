@@ -5,6 +5,7 @@ const PKG_PATH = path.join(ROOT, 'package.json')
 
 const TARO_CONFIG = path.join(ROOT, 'config/index.js')
 const PLATFORM_DIR = path.join(ROOT, './src/wxat-common/utils/platform')
+const OLD_MIGRATES = path.join(ROOT, 'migrates')
 
 const DEFAULT_BABEL_GENERATOR_OPTIONS = {
   retainLines: true,
@@ -41,6 +42,7 @@ module.exports = {
 
   PLATFORM_DIR,
   TARO_CONFIG,
+  OLD_MIGRATES,
 
   CSS_EXT,
   SCSS_EXT,

@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const processor = require('./process')
 const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = require('./utils')
-const { ROOT } = require('./utils/config')
+const { ROOT, OLD_MIGRATES } = require('./utils/config')
 
 const TARO_VERSION = 'next'
 const PKG = readPackageJSON()
@@ -47,6 +47,12 @@ const DEPENDENCIES_TO_REMOVE = [
   'react-replace-nerv',
   'regenerator-runtime',
   'terser-webpack-plugin',
+  'image-webpack-loader',
+
+  // 迁移脚本
+  'diff',
+  '@types/diff',
+  '@types/babel__core',
 ]
 
 /**
@@ -167,6 +173,10 @@ function ignoreUnExistedDeps(list) {
   return list.filter((i) => hasDep(PKG, i))
 }
 
+function npmConfig() {
+  execCommand(`npm i -g mirror-config-china --registry=https://registry.npm.taobao.org`)
+}
+
 /**
  * 移除旧的依赖
  */
@@ -175,6 +185,11 @@ function removeOldDependencies() {
   if (depsToRemove.length) {
     removeDeps(PKG, depsToRemove)
     savePackageJSON(PKG)
+  }
+
+  // 移除旧的迁移文件
+  if (fs.existsSync(OLD_MIGRATES)) {
+    fs.rmSync(OLD_MIGRATES, { recursive: true })
   }
 }
 
@@ -215,11 +230,9 @@ function addConfig() {
 }
 
 module.exports = function upgradeDependencies() {
-  processor.addTask('移除旧模块', removeOldDependencies, undefined, () => {
-    process.exit()
-  })
-  processor.addTask('升级依赖', addDependencies, undefined, () => {
-    process.exit()
-  })
-  processor.addTask('添加配置文件', addConfig)
+  const exitIfFailed = () => process.exit(-1)
+  processor.addTask('初始化 npm 镜像', npmConfig, undefined, exitIfFailed)
+  processor.addTask('移除旧模块', removeOldDependencies, undefined, exitIfFailed)
+  processor.addTask('升级依赖', addDependencies, undefined, exitIfFailed)
+  processor.addTask('添加配置文件', addConfig, undefined, exitIfFailed)
 }
