@@ -100,7 +100,14 @@ module.exports = {
       let content = '以下问题请手动修复：\n\n'
       errorFiles.forEach((file) => {
         content += '\n' + file + ': \n\n'
-        content += messageBox[file].map((i) => '\t' + i).join('\n')
+        content += messageBox[file]
+          .map((i) =>
+            i
+              .split('\n')
+              .map((t) => '\t\t' + t)
+              .join('\n')
+          )
+          .join('\n')
         content += '\n\n'
       })
 
