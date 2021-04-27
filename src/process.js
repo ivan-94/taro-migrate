@@ -82,11 +82,12 @@ module.exports = {
         if (file.match(reg)) {
           for (const [name, handler] of tasks) {
             try {
+              console.log('\t' + `正在执行 ${name}`)
               await handler(file)
-              console.log('\t' + chalk.green(`执行 ${name} 成功`))
+              console.log('\t\t' + chalk.green(`执行 ${name} 成功`))
             } catch (err) {
               const message = `执行 ${name} 失败, 请手动修改：${err.message}`
-              console.error('\t' + chalk.red(message))
+              console.error('\t\t' + chalk.red(message))
               this.addMessage(file, message)
             }
           }

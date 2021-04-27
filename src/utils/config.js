@@ -15,9 +15,9 @@ const DEFAULT_BABEL_GENERATOR_OPTIONS = {
 
 /**
  * Babel 解析器默认参数
- * @type {import('@babel/core').TransformOptions}
+ * @type {() => import('@babel/core').TransformOptions}
  */
-const DEFAULT_BABEL_TRANSFORM_OPTIONS = {
+const DEFAULT_BABEL_TRANSFORM_OPTIONS = () => ({
   sourceType: 'module',
   compact: false,
   highlightCode: false,
@@ -25,7 +25,7 @@ const DEFAULT_BABEL_TRANSFORM_OPTIONS = {
   parserOpts: {
     plugins: ['decorators-legacy', 'classProperties', 'dynamicImport', 'typescript', 'jsx'],
   },
-}
+})
 
 /**
  * 扩展名

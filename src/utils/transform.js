@@ -86,7 +86,7 @@ async function transformFile(file, babelOpts = {}, options = {}) {
     }
   }
 
-  const finalOptions = { ...DEFAULT_BABEL_TRANSFORM_OPTIONS, ...(babelOpts || {}), filename: file }
+  const finalOptions = Object.assign(DEFAULT_BABEL_TRANSFORM_OPTIONS(), { ...(babelOpts || {}), filename: file })
   const res = await transformAsync(code, finalOptions)
 
   if (res == null || res.code == null) {
