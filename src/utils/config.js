@@ -21,6 +21,7 @@ const DEFAULT_BABEL_TRANSFORM_OPTIONS = () => ({
   sourceType: 'module',
   compact: false,
   highlightCode: false,
+  configFile: false,
   babelrc: false,
   generatorOpts: DEFAULT_BABEL_GENERATOR_OPTIONS,
   parserOpts: {
