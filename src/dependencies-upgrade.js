@@ -5,9 +5,9 @@ const fs = require('fs')
 const path = require('path')
 const processor = require('./process')
 const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = require('./utils')
-const { ROOT, OLD_MIGRATES } = require('./utils/config')
+const { ROOT, OLD_MIGRATES, YARN_LOCK, PACKAGE_LOCK } = require('./utils/config')
 
-const TARO_VERSION = 'next'
+const TARO_VERSION = '3.2.6'
 const PKG = readPackageJSON()
 /**
  * 是否启用了 RN
@@ -166,6 +166,8 @@ const DEPENDENCIES_TO_UPGRADE = [
   'wk-taro-platform',
 ]
 
+const REGISTRY = ` --registry=https://registry.npm.taobao.org`
+
 /**
  * @param {string[]} list
  */
@@ -174,7 +176,7 @@ function ignoreUnExistedDeps(list) {
 }
 
 function npmConfig() {
-  execCommand(`npm i -g mirror-config-china --registry=https://registry.npm.taobao.org`)
+  execCommand(`npm i -g mirror-config-china` + REGISTRY)
 }
 
 /**
@@ -184,12 +186,24 @@ function removeOldDependencies() {
   const depsToRemove = ignoreUnExistedDeps(DEPENDENCIES_TO_REMOVE)
   if (depsToRemove.length) {
     removeDeps(PKG, depsToRemove)
-    savePackageJSON(PKG)
   }
+
+  if (fs.existsSync(YARN_LOCK)) {
+    fs.unlinkSync(YARN_LOCK)
+  }
+
+  if (fs.existsSync(PACKAGE_LOCK)) {
+    fs.unlinkSync(PACKAGE_LOCK)
+  }
+
+  // 先移除再安装
+  removeDeps(PKG, DEV_DEPENDENCIES_TO_UPGRADE)
+  removeDeps(PKG, DEPENDENCIES_TO_UPGRADE)
+  savePackageJSON(PKG)
 
   // 移除旧的迁移文件
   if (fs.existsSync(OLD_MIGRATES)) {
-    fs.rmSync(OLD_MIGRATES, { recursive: true })
+    fs.rmdirSync(OLD_MIGRATES, { recursive: true })
   }
 }
 
@@ -217,8 +231,8 @@ function getDeps(list) {
 }
 
 function addDependencies() {
-  execCommand(`yarn add ${getDeps(DEV_DEPENDENCIES_TO_UPGRADE)} -D`)
-  execCommand(`yarn add ${getDeps(DEPENDENCIES_TO_UPGRADE)}`)
+  execCommand(`yarn add ${getDeps(DEV_DEPENDENCIES_TO_UPGRADE)} -D` + REGISTRY)
+  execCommand(`yarn add ${getDeps(DEPENDENCIES_TO_UPGRADE)}` + REGISTRY)
   console.log('\n\n')
 }
 

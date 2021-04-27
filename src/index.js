@@ -10,7 +10,7 @@ const [major, minor] = process.version
   .split('.')
   .map((i) => parseInt(i))
 if (major < 12 || (major === 12 && minor < 10)) {
-  console.error('请安装大于 >= 12.10 NodeJS 版本')
+  console.error('请安装大于 >= 12.10 NodeJS 版本, 建议 v14.6.0')
   process.exit(-1)
 }
 
