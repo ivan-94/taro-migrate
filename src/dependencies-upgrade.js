@@ -4,7 +4,7 @@
 const fs = require('fs')
 const path = require('path')
 const processor = require('./process')
-const { execCommand, readPackageJSON, hasDep } = require('./utils')
+const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = require('./utils')
 const { ROOT } = require('./utils/config')
 
 const TARO_VERSION = 'next'
@@ -173,8 +173,8 @@ function ignoreUnExistedDeps(list) {
 function removeOldDependencies() {
   const depsToRemove = ignoreUnExistedDeps(DEPENDENCIES_TO_REMOVE)
   if (depsToRemove.length) {
-    execCommand(`yarn remove ${depsToRemove.join(' ')}`)
-    console.log('\n\n')
+    removeDeps(PKG, depsToRemove)
+    savePackageJSON(PKG)
   }
 }
 
@@ -215,10 +215,6 @@ function addConfig() {
 }
 
 module.exports = function upgradeDependencies() {
-  removeOldDependencies()
-  addDependencies()
-  addConfig()
-
   processor.addTask('移除旧模块', removeOldDependencies, undefined, () => {
     process.exit()
   })

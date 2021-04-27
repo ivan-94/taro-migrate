@@ -55,11 +55,13 @@ module.exports = {
   },
 
   async run() {
-    // 运行任务
-    tasks.forEach(async ([name, task, onSuccess, onFailed]) => {
+    console.log('正在运行 Taro 3.x 迁移')
+
+    for (const [name, task, onSuccess, onFailed] of tasks) {
       try {
+        console.log(`- 正在运行 ${name}: \n\n`)
         await task()
-        console.log(chalk.green(`- 运行 ${name} 成功`))
+        console.log(chalk.green(`- 运行 ${name} 成功\n\n`))
         if (onSuccess) {
           onSuccess()
         }
@@ -71,7 +73,7 @@ module.exports = {
           onFailed(err)
         }
       }
-    })
+    }
 
     const all = await getAllScripts()
     for (const file of all) {

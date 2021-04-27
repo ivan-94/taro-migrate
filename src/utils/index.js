@@ -1,8 +1,9 @@
 const debug = require('debug')('taro-migrate')
+const fs = require('fs')
 const { execSync } = require('child_process')
 const path = require('path')
 const glob = require('glob')
-const { ROOT, JSX_EXT, SCRIPT_EXT } = require('./config')
+const { ROOT, JSX_EXT, SCRIPT_EXT, PKG_PATH } = require('./config')
 
 /**
  * 是否应该使用 yarn
@@ -29,7 +30,14 @@ function execCommand(cmd) {
 }
 
 function readPackageJSON() {
-  return require(path.join(ROOT, 'package.json'))
+  return require(PKG_PATH)
+}
+
+/**
+ * @param {any} pkg
+ */
+function savePackageJSON(pkg) {
+  fs.writeFileSync(PKG_PATH, JSON.stringify(pkg, undefined, 2))
 }
 
 /**
@@ -38,7 +46,7 @@ function readPackageJSON() {
  * @param {string} dep
  */
 function hasDep(pkg, dep) {
-  return pkg && (dep in pkg.dependencies || dep in pkg.devDependencies)
+  return pkg && ((pkg.dependencies && dep in pkg.dependencies) || (pkg.devDependencies && dep in pkg.devDependencies))
 }
 
 /**
@@ -47,7 +55,22 @@ function hasDep(pkg, dep) {
  * @param {string} dep
  */
 function getDep(pkg, dep) {
-  return pkg && (pkg.dependencies[dep] || pkg.devDependencies[dep])
+  return pkg && ((pkg.dependencies && pkg.dependencies[dep]) || (pkg.devDependencies && pkg.devDependencies[dep]))
+}
+
+/**
+ * 移除依赖
+ * @param {any} pkg
+ * @param {string[]} deps
+ */
+function removeDeps(pkg, deps) {
+  ;[pkg.dependencies, pkg.devDependencies].forEach((obj) => {
+    if (obj) {
+      deps.forEach((dep) => {
+        delete obj[dep]
+      })
+    }
+  })
 }
 
 /**
@@ -89,8 +112,10 @@ module.exports = {
   shouldUseYarn,
   execCommand,
   readPackageJSON,
+  savePackageJSON,
   hasDep,
   getDep,
   getAllComponents,
   getAllScripts,
+  removeDeps,
 }

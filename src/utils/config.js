@@ -1,9 +1,10 @@
 const path = require('path')
 
 const ROOT = process.cwd()
+const PKG_PATH = path.join(ROOT, 'package.json')
 
 const TARO_CONFIG = path.join(ROOT, 'config/index.js')
-const PLATFORM_DIR =path.join(ROOT, './src/wxat-common/utils/platform')
+const PLATFORM_DIR = path.join(ROOT, './src/wxat-common/utils/platform')
 
 const DEFAULT_BABEL_GENERATOR_OPTIONS = {
   retainLines: true,
@@ -34,6 +35,7 @@ const SCRIPT_EXT = JS_EXT.concat(TS_EXT)
 
 module.exports = {
   ROOT,
+  PKG_PATH,
   DEFAULT_BABEL_TRANSFORM_OPTIONS,
   DEFAULT_BABEL_GENERATOR_OPTIONS,
 

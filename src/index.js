@@ -5,6 +5,15 @@ if (!shouldUseYarn()) {
   process.exit(-1)
 }
 
+const [major, minor] = process.version
+  .slice(1)
+  .split('.')
+  .map((i) => parseInt(i))
+if (major < 12 || (major === 12 && minor < 10)) {
+  console.error('请安装大于 >= 12.10 NodeJS 版本')
+  process.exit(-1)
+}
+
 // 检查是否在 taro 项目根目录中执行
 try {
   const pkg = readPackageJSON()
@@ -23,18 +32,11 @@ try {
 }
 
 const processor = require('./process')
-const upgradeDependencies = require('./dependencies-upgrade')
-const configMigrate = require('./config-migrate')
-const importRewrite = require('./import-rewrite')
-const reactMigrate = require('./react-migrate')
-const platformMigrate = require('./platform-migrate')
 
-// 升级依赖
-upgradeDependencies()
-// 平台代码升级
-platformMigrate()
-configMigrate()
-importRewrite()
-reactMigrate()
+require('./dependencies-upgrade')()
+require('./platform-migrate')()
+require('./config-migrate')()
+require('./import-rewrite')()
+require('./react-migrate')()
 
 processor.run()
