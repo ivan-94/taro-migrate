@@ -70,6 +70,23 @@ function removeNamedImport(path, source, name) {
 }
 
 /**
+ *
+ * @param {NodePath<Program>} path
+ * @param {string} source
+ */
+function removeImportIfEmpty(path, source) {
+  const idx = path.node.body.findIndex((d) => t.isImportDeclaration(d) && d.source.value === source)
+  if (idx !== -1) {
+    const node = /** @type {ImportDeclaration}*/ (path.node.body[idx])
+    if (node.specifiers == null || !node.specifiers.length) {
+      path.node.body.splice(idx, 1)
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * @param {NodePath<Program>} path
  * @param {string} source
  */
@@ -184,4 +201,5 @@ module.exports = {
   getProperty,
   removeProperties,
   removeImportSource,
+  removeImportIfEmpty,
 }
