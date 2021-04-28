@@ -11,7 +11,12 @@ const processor = require('./process')
  */
 /**
  * @template O
- * @typedef {import('@babel/core').PluginPass & {opts: O, addGetCurrentInstanceImport: boolean, addReactImport: boolean}} State
+ * @typedef {import('@babel/core').PluginPass & {
+ *   opts: O,
+ *   addGetCurrentInstanceImport: boolean,
+ *   addReactImport: boolean,
+ *   removeWKComponent?: true,
+ * }} State
  */
 /**
  * @template T
@@ -66,6 +71,9 @@ function reactMigratePlugin(babel) {
           }
 
           removeNamedImport(path, '@/wxat-common/utils/platform', 'getRef')
+          if (state.removeWKComponent) {
+            removeNamedImport(path, '@/wxat-common/utils/platform', 'WKComponent')
+          }
         },
       },
 
@@ -133,6 +141,7 @@ function reactMigratePlugin(babel) {
              */
             const suffix = []
             node.decorators.forEach((d) => {
+              // WKComponent、WKPage 必须在最里层
               if (t.isIdentifier(d.expression) && ['WKPage', 'WKComponent'].includes(d.expression.name)) {
                 suffix.push(d)
               } else if (
@@ -192,6 +201,21 @@ function reactMigratePlugin(babel) {
             func.replaceWith(forward)
             state.addReactImport = true
           }
+          state.opts.setDirty(true)
+        }
+      },
+
+      /**
+       * 移除函数组件 WKComponent
+       */
+      AssignmentExpression(path, state) {
+        if (
+          t.isCallExpression(path.node.right) &&
+          t.isIdentifier(path.node.right.callee) &&
+          path.node.right.callee.name === 'WKComponent'
+        ) {
+          path.remove()
+          state.removeWKComponent = true
           state.opts.setDirty(true)
         }
       },
