@@ -91,7 +91,9 @@ function removeImportIfEmpty(path, source) {
  * @param {string} source
  */
 function removeImportSource(path, source) {
-  const idx = path.node.body.findIndex((d) => t.isImportDeclaration(d) && d.source.value === source)
+  const idx = path.node.body.findIndex(
+    (d) => (t.isImportDeclaration(d) || t.isExportAllDeclaration(d)) && d.source.value === source
+  )
 
   if (idx !== -1) {
     path.node.body.splice(idx, 1)

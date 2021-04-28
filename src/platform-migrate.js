@@ -7,7 +7,8 @@ const path = require('path')
 const processor = require('./process')
 const { PLATFORM_DIR } = require('./utils/config')
 const { isExists } = require('./utils/file')
-const { writeAndPrettierFile } = require('./utils/transform')
+const { writeAndPrettierFile, transformFile } = require('./utils/transform')
+const { removeImportSource } = require('./utils/babel')
 
 const FILES_TO_REMOVE = [
   'react-replace-nerv',
@@ -26,18 +27,65 @@ const FILES_TO_REPLACE = [
   'createContext.ts',
 ]
 
-async function removeFiles() {
-  const BAK = path.join(PLATFORM_DIR, '.bak')
+/**
+ * @template T
+ * @typedef {import('@babel/traverse').NodePath<T>} NodePath
+ */
+/**
+ * @template O
+ * @typedef {import('@babel/core').PluginPass & {opts: O}} State
+ */
+/**
+ * @template T
+ * @typedef {import('@babel/core').PluginObj<State<T>>} PluginObj
+ */
+/**
+ * @typedef {import('@babel/core')} Babel
+ * @typedef {import('@babel/traverse').Node} BabelNode
+ * @typedef {import('@babel/types').ObjectExpression} ObjectExpression
+ * @typedef {import('@babel/types').TaggedTemplateExpression} TaggedTemplateExpression
+ * @typedef {import('@babel/types').BlockStatement} BlockStatement
+ * @typedef {{setDirty: (dirty: boolean) => void}} Options
+ */
 
-  if (!(await isExists(BAK))) {
-    await fsp.mkdir(BAK)
+/**
+ * 提取 config 文件
+ * @param {Babel} babel
+ * @returns {PluginObj<Options>}
+ */
+function removeRefPlugin(babel) {
+  const { types: t, template, traverse } = babel
+  return {
+    visitor: {
+      Program(path) {
+        removeImportSource(path, './hooks')
+        removeImportSource(path, './getRef')
+      },
+    },
   }
+}
 
-  for (const file of FILES_TO_REMOVE) {
-    const src = path.join(PLATFORM_DIR, file)
-    if (await isExists(src)) {
-      await fsp.rename(src, path.join(BAK, file))
+async function removeFiles() {
+  try {
+    const BAK = path.join(PLATFORM_DIR, '.bak')
+
+    if (!(await isExists(BAK))) {
+      await fsp.mkdir(BAK)
     }
+
+    for (const file of FILES_TO_REMOVE) {
+      const src = path.join(PLATFORM_DIR, file)
+      if (await isExists(src)) {
+        await fsp.rename(src, path.join(BAK, file))
+      }
+    }
+  } catch (err) {
+    throw new Error(
+      `移除文件失败：${err.message}, 请手动移除：\n\n` +
+        FILES_TO_REMOVE.map((i) => {
+          return '\t' + path.join(PLATFORM_DIR, i)
+        }).join('\n')
+    )
   }
 }
 
@@ -48,6 +96,7 @@ async function replaceFiles() {
   for (const file of FILES_TO_REPLACE) {
     const src = path.join(PLATFORM_DIR, file)
     const template = path.join(__dirname, './template', file)
+    console.log('\t正在替换' + src)
     if (await isExists(template)) {
       await fsp.copyFile(template, src)
     } else {
@@ -64,6 +113,12 @@ async function replaceFiles() {
   }
 }
 
+function removeRef() {
+  return transformFile(path.join(PLATFORM_DIR, 'index.ts'), {
+    plugins: [removeRefPlugin],
+  })
+}
+
 module.exports = function () {
   processor.addTask('废弃平台代码', removeFiles)
   processor.addTask('替换平台代码', replaceFiles, () => {
@@ -72,4 +127,5 @@ module.exports = function () {
       'WKPage 页面全局生命周期监听方式改变，需要手动迁移旧代码'
     )
   })
+  processor.addTask('移除平台代码引用', removeRef)
 }
