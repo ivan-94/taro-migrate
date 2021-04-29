@@ -7,6 +7,7 @@ const { template, types: t } = require('@babel/core')
 /**
  * @typedef {import('@babel/traverse').Node} BabelNode
  * @typedef {import('@babel/core').types.Program} Program
+ * @typedef {import('@babel/core').types.ImportSpecifier} ImportSpecifier
  * @typedef {import('@babel/core').types.ImportDeclaration} ImportDeclaration
  * @typedef {import('@babel/core').types.ImportDefaultSpecifier} ImportDefaultSpecifier
  * @typedef {import('@babel/core').types.ExportDefaultDeclaration} ExportDefaultDeclaration
@@ -47,6 +48,31 @@ function addNamedImport(path, source, name, local) {
     // @ts-expect-error
     path.node.body.unshift(decl)
   }
+}
+
+/**
+ * 查找命名导入
+ * @param {NodePath<Program>} path
+ * @param {string} source
+ * @param {string} name
+ * @returns {string | null}
+ */
+function getNamedImport(path, source, name) {
+  const importDecl = /** @type {ImportDeclaration | null} */ (path.node.body.find(
+    (d) => t.isImportDeclaration(d) && d.source.value === source
+  ))
+
+  if (importDecl) {
+    // 查看是否导入
+    const namedImport = /** @type {ImportSpecifier}*/ (importDecl.specifiers.find(
+      (s) => t.isImportSpecifier(s) && t.isIdentifier(s.imported) && s.imported.name === name
+    ))
+
+    if (namedImport) {
+      return namedImport.local.name
+    }
+  }
+  return null
 }
 
 /**
@@ -200,6 +226,7 @@ module.exports = {
   addNamedImport,
   addDefaultImport,
   removeNamedImport,
+  getNamedImport,
   getProperty,
   removeProperties,
   removeImportSource,

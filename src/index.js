@@ -38,6 +38,7 @@ require('./platform-migrate')()
 require('./config-migrate')()
 require('./import-rewrite')()
 require('./react-migrate')()
+require('./redux-migrate')()
 require('./clear-unused')()
 
 processor.run()

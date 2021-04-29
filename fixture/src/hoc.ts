@@ -1,20 +1,14 @@
-import Taro, { useMemo } from '@tarojs/taro';
-import { useSelector, useDispatch } from '@tarojs/redux';
-import { forwardRef, createElement } from 'nervjs';
-import { mapDispatchToProps, mapStateToProps } from './mapper';
+import { connect } from 'react-redux';
+import { mapDispatchToProps, mapStateToProps, HocState } from './mapper';
+
+export { HocState };
 
 /**
- * @param {*} Comp
+ * 注入全局通用的业务数据
+ *
  */
-export default function (Comp) {
-  const Connected = forwardRef((props, ref) => {
-    const injectedProps = useSelector(mapStateToProps);
-    const dispatch = useDispatch();
-    const injectedDispatch = useMemo(() => mapDispatchToProps(dispatch), [dispatch]);
-    return createElement(Comp, { ...props, ...injectedProps, ...injectedDispatch, ref });
-  });
-
-  Connected.displayName = `InjectGlobal(${Comp.displayName || Comp.name})`;
-
-  return Connected;
+export default function hoc<T>(Comp: T): T {
+  // eslint-disable-next-line
+  // @ts-ignore
+  return connect(mapStateToProps, mapDispatchToProps, undefined, { forwardRef: true })(Comp);
 }

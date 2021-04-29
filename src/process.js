@@ -1,4 +1,5 @@
 const fs = require('fs')
+const { EventEmitter } = require('events')
 const chalk = require('chalk').default
 const { getAllScripts } = require('./utils')
 
@@ -15,9 +16,9 @@ const processor = new Map()
  */
 const tasks = []
 
-module.exports = {
-  ALL_REGEXP: /.*/,
-  COMPONENT_REGEXP: /\.(tsx|jsx)$/,
+module.exports = new (class extends EventEmitter {
+  ALL_REGEXP = /.*/
+  COMPONENT_REGEXP = /\.(tsx|jsx)$/
   /**
    * @param {RegExp} reg
    * @param {string} name
@@ -30,7 +31,7 @@ module.exports = {
     } else {
       processor.set(reg, [[name, handler]])
     }
-  },
+  }
 
   /**
    * @param {string} file
@@ -42,7 +43,7 @@ module.exports = {
     } else {
       messageBox[file] = [message]
     }
-  },
+  }
 
   /**
    * @param {string} name
@@ -52,11 +53,12 @@ module.exports = {
    */
   addTask(name, task, onSuccess, onFailed) {
     tasks.push([name, task, onSuccess, onFailed])
-  },
+  }
 
   async run() {
     console.log('正在运行 Taro 3.x 迁移')
 
+    this.emit('task-start')
     for (const [name, task, onSuccess, onFailed] of tasks) {
       try {
         console.log(`- 正在运行 ${name}: \n\n`)
@@ -74,6 +76,9 @@ module.exports = {
         }
       }
     }
+
+    this.emit('task-done')
+    this.emit('process-start')
 
     const all = await getAllScripts()
     for (const file of all) {
@@ -94,6 +99,8 @@ module.exports = {
         }
       }
     }
+
+    this.emit('process-done')
 
     // 输出到错误日志
     const errorFiles = Object.keys(messageBox)
@@ -116,5 +123,5 @@ module.exports = {
 
       console.log('\n\n' + chalk.red('需要手动修改的问题已输出到 migrate.todo') + '\n\n')
     }
-  },
-}
+  }
+})()

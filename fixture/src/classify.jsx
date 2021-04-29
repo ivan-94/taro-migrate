@@ -30,6 +30,8 @@ const mapStateToProps = (state) => ({
 
 @hoc
 @connect(mapStateToProps)
+@UknowHOC
+@UknowHOC2()
 @WKPage
 class Classfiy extends Taro.Component {
   config = {

@@ -50,6 +50,9 @@ const LIFE_CYCLE_REWRITE = new Map([
   ['componentWillUpdate', { target: 'UNSAFE_componentWillUpdate', message: '请尽快迁移为 componentDidUpdate' }],
 ])
 
+const KNOWED_HOC = new Set(['WKPage', 'WKComponent', 'connect', 'hoc'])
+const unknowHocs = new Set()
+
 /**
  * 需要被移除的 HOC
  */
@@ -194,6 +197,25 @@ function reactMigratePlugin(babel) {
             state.opts.setDirty(true)
           }
         }
+        {
+          /**
+           * 检测未知的注解
+           */
+          const node = path.node
+          if (node.decorators && node.decorators.length) {
+            node.decorators.forEach((d) => {
+              if (t.isIdentifier(d.expression) && !KNOWED_HOC.has(d.expression.name)) {
+                unknowHocs.add(d.expression.name)
+              } else if (
+                t.isCallExpression(d.expression) &&
+                t.isIdentifier(d.expression.callee) &&
+                !KNOWED_HOC.has(d.expression.callee.name)
+              ) {
+                unknowHocs.add(d.expression.callee.name)
+              }
+            })
+          }
+        }
       },
 
       /**
@@ -287,4 +309,12 @@ module.exports = function () {
     console.log('待移除的高阶组件: ' + HOC_TO_REMOVE.join(','))
   }
   processor.addProcess(processor.COMPONENT_REGEXP, 'React 用法迁移', reactMigrate)
+  processor.on('process-done', () => {
+    if (unknowHocs.size) {
+      processor.addMessage(
+        '警告',
+        `检测到以下高阶组件，你需要按照迁移指南手动迁移: \n\n` + Array.from(unknowHocs.values()).join(', ') + '\n\n'
+      )
+    }
+  })
 }
