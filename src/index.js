@@ -33,6 +33,7 @@ try {
 
 const processor = require('./process')
 
+require('./preprocess')()
 require('./dependencies-upgrade')()
 require('./platform-migrate')()
 require('./config-migrate')()

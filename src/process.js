@@ -12,7 +12,7 @@ const messageBox = {}
  */
 const processor = new Map()
 /**
- * @type {Array<[string, Function, Function | undefined, Function | undefined]>}
+ * @type {Array<[string, (params: {allFiles: string[]}) => void, Function | undefined, Function | undefined]>}
  */
 const tasks = []
 
@@ -47,7 +47,7 @@ module.exports = new (class extends EventEmitter {
 
   /**
    * @param {string} name
-   * @param {Function} task
+   * @param {(params: {allFiles: string[]}) => void } task
    * @param {Function} [onSuccess]
    * @param {(err: Error) => void} [onFailed]
    */
@@ -57,12 +57,13 @@ module.exports = new (class extends EventEmitter {
 
   async run() {
     console.log('正在运行 Taro 3.x 迁移')
+    const allFiles = await getAllScripts()
 
     this.emit('task-start')
     for (const [name, task, onSuccess, onFailed] of tasks) {
       try {
         console.log(`- 正在运行 ${name}: \n\n`)
-        await task()
+        await task({ allFiles })
         console.log(chalk.green(`- 运行 ${name} 成功\n\n`))
         if (onSuccess) {
           onSuccess()
@@ -80,8 +81,7 @@ module.exports = new (class extends EventEmitter {
     this.emit('task-done')
     this.emit('process-start')
 
-    const all = await getAllScripts()
-    for (const file of all) {
+    for (const file of allFiles) {
       console.log(`* 正在处理:  ${file}`)
       for (const [reg, tasks] of processor) {
         if (file.match(reg)) {
