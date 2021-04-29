@@ -26,6 +26,7 @@ const { removeProperties, getProperty } = require('./utils/babel')
  * @typedef {import('@babel/types').ObjectExpression} ObjectExpression
  * @typedef {import('@babel/types').TaggedTemplateExpression} TaggedTemplateExpression
  * @typedef {import('@babel/types').BlockStatement} BlockStatement
+ * @typedef {import('@babel/types').ClassDeclaration} ClassDeclaration
  * @typedef {{setDirty: (dirty: boolean) => void}} Options
  */
 
@@ -203,6 +204,13 @@ async function removePageIndex() {
         const { types: t } = babel
         return {
           visitor: {
+            Program(path) {
+              if (!path.node.body.some((i) => t.isExportDefaultDeclaration(i))) {
+                const clsDcl = /** @type {ClassDeclaration} */ (path.node.body.find((i) => t.isClassDeclaration(i)))
+                const name = clsDcl ? clsDcl.id.name : 'App'
+                path.node.body.push(t.exportDefaultDeclaration(t.identifier(name)))
+              }
+            },
             JSXElement(path) {
               if (
                 t.isJSXOpeningElement(path.node.openingElement) &&
