@@ -1,11 +1,14 @@
 /**
  * 配置文件升级
  */
+const path = require('path')
 const fs = require('fs')
 const processor = require('./process')
 const pathUtils = require('path')
+const { readConfig } = require('@tarojs/helper')
+const { isExists } = require('./utils/file')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
-const { TARO_CONFIG, APP_ENTRY } = require('./utils/config')
+const { ROOT, TARO_CONFIG, APP_ENTRY, APP_CONFIG } = require('./utils/config')
 const { removeProperties, getProperty } = require('./utils/babel')
 
 /**
@@ -21,6 +24,7 @@ const { removeProperties, getProperty } = require('./utils/babel')
  * @typedef {import('@babel/core').PluginObj<State<T>>} PluginObj
  */
 /**
+ * @typedef {import('@tarojs/taro').AppConfig} AppConfig
  * @typedef {import('@babel/core')} Babel
  * @typedef {import('@babel/traverse').Node} BabelNode
  * @typedef {import('@babel/types').ObjectExpression} ObjectExpression
@@ -35,7 +39,7 @@ const { removeProperties, getProperty } = require('./utils/babel')
  * @param {Babel} babel
  * @returns {PluginObj<Options>}
  */
-function configExtra(babel) {
+function configExtraPlugin(babel) {
   const { types: t, template, traverse } = babel
   return {
     visitor: {
@@ -179,7 +183,7 @@ async function pageConfigMigrate(file) {
   const babelOption = {
     plugins: [
       [
-        configExtra,
+        configExtraPlugin,
         {
           setDirty: (value) => {
             dirty = value
@@ -256,8 +260,38 @@ async function removePageIndex() {
   })
 }
 
+async function addMissingPageConfig() {
+  try {
+    const config = /** @type {AppConfig | null}*/ (readConfig(APP_CONFIG))
+    /** @type {string[]} */
+    let pages = []
+    if (config && config.pages) {
+      pages = config.pages
+    }
+    if (config && config.subPackages) {
+      config.subPackages.forEach((i) => {
+        pages = pages.concat((i.pages || []).map((j) => path.join(i.root, j)))
+      })
+    }
+
+    // 补全page
+    for (const page of pages) {
+      const p = path.join(ROOT, './src', page) + '.config.ts'
+      if (!(await isExists(p))) {
+        console.log('正在补全页面配置文件: ' + p)
+        await writeAndPrettierFile(p, `export default {}`)
+      }
+    }
+  } catch (err) {
+    console.error()
+  }
+}
+
 module.exports = async function configMigrate() {
   processor.addTask('升级 Taro 构建配置', taroBuildConfigMigrate)
   processor.addTask('移除 app.tsx 页面引用', removePageIndex)
   processor.addProcess(processor.COMPONENT_REGEXP, '页面配置提取', pageConfigMigrate)
+  processor.on('process-done', () => {
+    processor.addTask('补全缺失的页面配置', addMissingPageConfig)
+  })
 }

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const { EventEmitter } = require('events')
-const chalk = require('chalk').default
+const { getDefault } = require('./utils')
+const chalk = getDefault(require('chalk'))
 const { getAllScripts } = require('./utils')
 
 /**
@@ -55,12 +56,14 @@ module.exports = new (class extends EventEmitter {
     tasks.push([name, task, onSuccess, onFailed])
   }
 
-  async run() {
-    console.log('正在运行 Taro 3.x 迁移')
-    const allFiles = await getAllScripts()
-
-    this.emit('task-start')
-    for (const [name, task, onSuccess, onFailed] of tasks) {
+  /**
+   *
+   * @param {string[]} allFiles
+   */
+  async runTask(allFiles) {
+    let taskItem = tasks.shift()
+    while (taskItem) {
+      const [name, task, onSuccess, onFailed] = taskItem
       try {
         console.log(`- 正在运行 ${name}: \n\n`)
         await task({ allFiles })
@@ -76,10 +79,24 @@ module.exports = new (class extends EventEmitter {
           onFailed(err)
         }
       }
+
+      taskItem = tasks.shift()
     }
+  }
+
+  async run() {
+    console.log('正在运行 Taro 3.x 迁移')
+    let allFiles = await getAllScripts()
+
+    this.emit('task-start')
+
+    await this.runTask(allFiles)
 
     this.emit('task-done')
     this.emit('process-start')
+
+    // 重新获取，可能被干掉了
+    allFiles = await getAllScripts()
 
     for (const file of allFiles) {
       console.log(`* 正在处理:  ${file}`)
@@ -101,6 +118,13 @@ module.exports = new (class extends EventEmitter {
     }
 
     this.emit('process-done')
+
+    // 后续任务
+    await new Promise((res) => {
+      process.nextTick(() => {
+        this.runTask(allFiles).then(res)
+      })
+    })
 
     // 输出到错误日志
     const errorFiles = Object.keys(messageBox)

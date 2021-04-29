@@ -3,20 +3,13 @@
 const { transformAsync } = require('@babel/core')
 const generator = require('@babel/generator')
 const prettier = require('prettier')
+const diff = require('diff')
 // const postcss = require('postcss')
 const { getPrettierOptions } = require('./prettier')
 const { readFile, writeFile } = require('./file')
+const { getDefault } = require('./index')
 const { DEFAULT_BABEL_TRANSFORM_OPTIONS, DEFAULT_BABEL_GENERATOR_OPTIONS } = require('./config')
-const diff = require('diff')
 const chalk = getDefault(require('chalk'))
-
-/**
- * @param {any} module
- * @returns
- */
-function getDefault(module) {
-  return module.default || module
-}
 
 /**
  * @typedef {import('@babel/core').Node } BabelNode

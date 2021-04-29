@@ -108,7 +108,17 @@ async function getAllScripts() {
   return getAllFiles(SCRIPT_EXT)
 }
 
+/**
+ * @template T
+ * @param {T} module
+ * @returns {T}
+ */
+function getDefault(module) {
+  return module.default || module
+}
+
 module.exports = {
+  getDefault,
   shouldUseYarn,
   execCommand,
   readPackageJSON,

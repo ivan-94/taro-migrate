@@ -4,6 +4,7 @@ const ROOT = process.cwd()
 const PKG_PATH = path.join(ROOT, 'package.json')
 
 const APP_ENTRY = path.join(ROOT, './src/app.tsx')
+const APP_CONFIG = path.join(ROOT, './src/app.config.ts')
 const TARO_CONFIG = path.join(ROOT, 'config/index.js')
 const PLATFORM_DIR = path.join(ROOT, './src/wxat-common/utils/platform')
 const OLD_MIGRATES = path.join(ROOT, 'migrates')
@@ -48,6 +49,7 @@ module.exports = {
   DEFAULT_BABEL_GENERATOR_OPTIONS,
 
   APP_ENTRY,
+  APP_CONFIG,
   PLATFORM_DIR,
   TARO_CONFIG,
   OLD_MIGRATES,
