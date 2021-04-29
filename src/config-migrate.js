@@ -2,12 +2,10 @@
  * 配置文件升级
  */
 const fs = require('fs')
-const debug = require('debug')('taro-migrate')
-const chalk = require('chalk')
 const processor = require('./process')
 const pathUtils = require('path')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
-const { TARO_CONFIG } = require('./utils/config')
+const { TARO_CONFIG, APP_ENTRY } = require('./utils/config')
 const { removeProperties, getProperty } = require('./utils/babel')
 
 /**
@@ -33,7 +31,6 @@ const { removeProperties, getProperty } = require('./utils/babel')
 
 /**
  * 提取 config 文件
- * TODO: 页面文件避免有 config.ts
  * @param {Babel} babel
  * @returns {PluginObj<Options>}
  */
@@ -194,7 +191,65 @@ async function pageConfigMigrate(file) {
   return transformFile(file, babelOption, { shouldWrite: () => dirty })
 }
 
+async function removePageIndex() {
+  return transformFile(APP_ENTRY, {
+    plugins: [
+      /**
+       * 移除 app.tsx 的页面应用
+       * @param {Babel} babel
+       * @returns {PluginObj<Options>}
+       */
+      function removePageIndexPlugin(babel) {
+        const { types: t } = babel
+        return {
+          visitor: {
+            JSXElement(path) {
+              if (
+                t.isJSXOpeningElement(path.node.openingElement) &&
+                t.isJSXIdentifier(path.node.openingElement.name) &&
+                path.node.openingElement.name.name === 'Provider'
+              ) {
+                // 替换 children
+                path.stop()
+
+                // 移除相关页面引用
+                path.get('children').forEach((child) =>
+                  child.traverse({
+                    JSXOpeningElement(subPath) {
+                      if (t.isJSXIdentifier(subPath.node.name)) {
+                        // 移除 绑定
+                        const binding = path.scope.getBinding(subPath.node.name.name)
+                        if (binding && binding.path) {
+                          const importDecl = binding.path.findParent((i) => i.isImportDeclaration())
+                          if (importDecl) {
+                            importDecl.remove()
+                          }
+                        }
+                      }
+                    },
+                  })
+                )
+
+                // 替换为 this.props.children
+                path.node.children = [
+                  t.jsxExpressionContainer(
+                    t.memberExpression(
+                      t.memberExpression(t.thisExpression(), t.identifier('props')),
+                      t.identifier('children')
+                    )
+                  ),
+                ]
+              }
+            },
+          },
+        }
+      },
+    ],
+  })
+}
+
 module.exports = async function configMigrate() {
   processor.addTask('升级 Taro 构建配置', taroBuildConfigMigrate)
+  processor.addTask('移除 app.tsx 页面引用', removePageIndex)
   processor.addProcess(processor.COMPONENT_REGEXP, '页面配置提取', pageConfigMigrate)
 }
