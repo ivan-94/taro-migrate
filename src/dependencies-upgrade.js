@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const processor = require('./process')
 const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = require('./utils')
-const { ROOT, OLD_MIGRATES, YARN_LOCK, PACKAGE_LOCK } = require('./utils/config')
+const { ROOT, OLD_MIGRATES, TARO_COMPONENTS, YARN_LOCK, PACKAGE_LOCK } = require('./utils/config')
 
 const TARO_VERSION = '3.2.6'
 const PKG = readPackageJSON()
@@ -204,6 +204,10 @@ function removeOldDependencies() {
   // 移除旧的迁移文件
   if (fs.existsSync(OLD_MIGRATES)) {
     fs.rmdirSync(OLD_MIGRATES, { recursive: true })
+  }
+
+  if (fs.existsSync(TARO_COMPONENTS)) {
+    fs.rmdirSync(TARO_COMPONENTS, { recursive: true })
   }
 }
 

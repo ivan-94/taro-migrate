@@ -7,6 +7,7 @@ const APP_ENTRY = path.join(ROOT, './src/app.tsx')
 const TARO_CONFIG = path.join(ROOT, 'config/index.js')
 const PLATFORM_DIR = path.join(ROOT, './src/wxat-common/utils/platform')
 const OLD_MIGRATES = path.join(ROOT, 'migrates')
+const TARO_COMPONENTS = path.join(ROOT, 'taro')
 const YARN_LOCK = path.join(ROOT, 'yarn.lock')
 const PACKAGE_LOCK = path.join(ROOT, 'package-lock.json')
 
@@ -52,6 +53,7 @@ module.exports = {
   OLD_MIGRATES,
   YARN_LOCK,
   PACKAGE_LOCK,
+  TARO_COMPONENTS,
 
   CSS_EXT,
   SCSS_EXT,
