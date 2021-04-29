@@ -15,7 +15,6 @@ const processor = require('./process')
  *   opts: O,
  *   addGetCurrentInstanceImport: boolean,
  *   addReactImport: boolean,
- *   removeWKComponent?: true,
  * }} State
  */
 /**
@@ -52,6 +51,15 @@ const LIFE_CYCLE_REWRITE = new Map([
 ])
 
 /**
+ * 需要被移除的 HOC
+ */
+const HOC_TO_REMOVE = process.env.HOC_TO_REMOVE
+  ? process.env.HOC_TO_REMOVE.split(',')
+      .filter(Boolean)
+      .map((i) => i.trim())
+  : []
+
+/**
  * React API 重写
  * @param {Babel} babel
  * @returns {PluginObj<Options>}
@@ -71,9 +79,6 @@ function reactMigratePlugin(babel) {
           }
 
           removeNamedImport(path, '@/wxat-common/utils/platform', 'getRef')
-          if (state.removeWKComponent) {
-            removeNamedImport(path, '@/wxat-common/utils/platform', 'WKComponent')
-          }
         },
       },
 
@@ -120,6 +125,35 @@ function reactMigratePlugin(babel) {
             state.addGetCurrentInstanceImport = true
 
             state.opts.setDirty(true)
+          }
+        }
+        {
+          /**
+           * 移除无用注解
+           */
+          const node = path.node
+          if (node.decorators && node.decorators.length && HOC_TO_REMOVE.length) {
+            for (const hoc of HOC_TO_REMOVE) {
+              const idx = node.decorators.findIndex(
+                (i) =>
+                  (t.isIdentifier(i.expression) && i.expression.name === hoc) ||
+                  (t.isCallExpression(i.expression) &&
+                    t.isIdentifier(i.expression.callee) &&
+                    i.expression.callee.name === hoc)
+              )
+
+              if (idx !== -1) {
+                // 移除
+                state.opts.setDirty(true)
+                node.decorators.splice(idx, 1)
+
+                // 移除绑定
+                const binding = path.scope.getBinding(hoc)
+                if (binding && binding.path) {
+                  binding.path.remove()
+                }
+              }
+            }
           }
         }
         {
@@ -214,8 +248,11 @@ function reactMigratePlugin(babel) {
           t.isIdentifier(path.node.right.callee) &&
           path.node.right.callee.name === 'WKComponent'
         ) {
+          const binding = path.scope.getBinding('WKComponent')
+          if (binding && binding.path) {
+            binding.path.remove()
+          }
           path.remove()
-          state.removeWKComponent = true
           state.opts.setDirty(true)
         }
       },
@@ -246,5 +283,8 @@ async function reactMigrate(file) {
 }
 
 module.exports = function () {
+  if (HOC_TO_REMOVE.length) {
+    console.log('待移除的高阶组件: ' + HOC_TO_REMOVE.join(','))
+  }
   processor.addProcess(processor.COMPONENT_REGEXP, 'React 用法迁移', reactMigrate)
 }
