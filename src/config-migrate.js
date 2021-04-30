@@ -181,7 +181,8 @@ async function taroBuildConfigMigrate() {
                   )
                 )
 
-                h5.node.properties.unshift(t.objectProperty(t.identifier('useHtmlComponents'), t.booleanLiteral(true)))
+                // 组件完全迁移后开启
+                // h5.node.properties.unshift(t.objectProperty(t.identifier('useHtmlComponents'), t.booleanLiteral(true)))
               }
             },
           },
