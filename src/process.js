@@ -67,12 +67,12 @@ module.exports = new (class extends EventEmitter {
       try {
         console.log(`- 正在运行 ${name}: \n\n`)
         await task({ allFiles })
-        console.log(chalk.green(`- 运行 ${name} 成功\n\n`))
+        console.log(chalk.green(`\t - 运行 ${name} 成功\n\n`))
         if (onSuccess) {
           onSuccess()
         }
       } catch (err) {
-        const message = `- 运行 ${name} 失败, 请手动修改：${err.message}`
+        const message = `\t- 运行 ${name} 失败, 请手动修改：${err.message}`
         console.error(chalk.red(message))
         this.addMessage(name, message)
         if (onFailed) {

@@ -74,7 +74,7 @@ function reactMigratePlugin(babel) {
       Program: {
         exit(path, state) {
           if (state.addGetCurrentInstanceImport) {
-            addNamedImport(path, '@tarojs/taro', 'getCurrentInstance')
+            addNamedImport(path, 'wk-taro-platform', '$getRouter')
           }
 
           if (state.addReactImport) {
@@ -107,22 +107,13 @@ function reactMigratePlugin(babel) {
           if (hasRouter) {
             // 添加 $Current
             // 最好以 属性的形式存在，在组件挂载的过程中确定当前页面比较靠谱，不建议动态去获取
-            const currentProperty = t.classProperty(
-              t.identifier('$Current'),
-              t.callExpression(t.identifier('getCurrentInstance'), [])
-            )
-
-            // 添加 $router getter
-            const getter = t.classMethod(
-              'get',
+            const $routerProperty = t.classProperty(
               t.identifier('$router'),
-              [],
-              /** @type {BlockStatement}*/ (template.ast(`{return this.$Current.router}`))
+              t.callExpression(t.identifier('$getRouter'), [])
             )
 
             const body = path.get('body').node
-            body.body.unshift(getter)
-            body.body.unshift(currentProperty)
+            body.body.unshift($routerProperty)
 
             // 添加导入
             state.addGetCurrentInstanceImport = true
