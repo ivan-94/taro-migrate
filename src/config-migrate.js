@@ -165,6 +165,23 @@ async function taroBuildConfigMigrate() {
                 // @ts-ignore
                 const h5 = /** @type {NodePath<ObjectExpression>} */ (getProperty(config, 'h5').get('value'))
                 removeProperties(h5, ['webpackChain'])
+
+                // 支持组件覆盖
+                h5.node.properties.unshift(
+                  t.objectMethod(
+                    'method',
+                    t.identifier('webpackChain'),
+                    [t.identifier('config')],
+                    /** @type {BlockStatement}*/ (template.ast(`{
+                    config.resolve.alias.set('@tarojs/components$', 'wk-taro-components-react/index');
+                    if (analyzeMode) {
+                      config.plugin('analyzer').use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin, []);
+                    }
+                  }`))
+                  )
+                )
+
+                h5.node.properties.unshift(t.objectProperty(t.identifier('useHtmlComponents'), t.booleanLiteral(true)))
               }
             },
           },
