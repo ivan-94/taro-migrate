@@ -1,13 +1,22 @@
+/**
+ * @deprecated
+ */
 import { WKPage } from 'wk-taro-platform';
 
 /**
- * 监听页面生命周期
+ * WKPage 已经废弃
+ * 监听页面生命周期方式已经重构:
+ * import {interceptTaroEvents} from 'wk-taro-platform'
+ * 
+ * interceptTaroEvents({
+ *   TARO_APP_EVENT_LAUNCH(appInstance, option) {
+ *     console.log("TARO onLaunch", appInstance, option);
+ *   },
+ *   TARO_PAGE_SHARE_TIMELINE(page, evt, rtn) {
+ *     console.log("TARO share app timeline", page, evt, rtn);
+ *   },
+ * }); 
+ * 
  */
-WKPage.watch({
-  onLoad(inst) {},
-  onShow(inst){},
-  onHide(inst){},
-  onDestroy(inst){}
-})
 
 export default WKPage

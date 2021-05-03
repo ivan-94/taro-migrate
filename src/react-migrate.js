@@ -50,17 +50,19 @@ const LIFE_CYCLE_REWRITE = new Map([
   ['componentWillUpdate', { target: 'UNSAFE_componentWillUpdate', message: '请尽快迁移为 componentDidUpdate' }],
 ])
 
+const COMPONENT_WRAPPER = ['WKPage', 'WKComponent']
 const KNOWED_HOC = new Set(['WKPage', 'WKComponent', 'connect', 'hoc'])
 const unknowHocs = new Set()
 
 /**
  * 需要被移除的 HOC
  */
-const HOC_TO_REMOVE = process.env.HOC_TO_REMOVE
+const HOC_TO_REMOVE = (process.env.HOC_TO_REMOVE
   ? process.env.HOC_TO_REMOVE.split(',')
       .filter(Boolean)
       .map((i) => i.trim())
   : []
+).concat(['WKPage'])
 
 /**
  * React API 重写
@@ -253,20 +255,23 @@ function reactMigratePlugin(babel) {
       },
 
       /**
-       * 移除函数组件 WKComponent
+       * 移除函数组件 WKComponent, WKPage
        */
       AssignmentExpression(path, state) {
-        if (
-          t.isCallExpression(path.node.right) &&
-          t.isIdentifier(path.node.right.callee) &&
-          path.node.right.callee.name === 'WKComponent'
-        ) {
-          const binding = path.scope.getBinding('WKComponent')
-          if (binding && binding.path) {
-            binding.path.remove()
+        for (const wrapper of COMPONENT_WRAPPER) {
+          if (
+            t.isCallExpression(path.node.right) &&
+            t.isIdentifier(path.node.right.callee) &&
+            path.node.right.callee.name === wrapper
+          ) {
+            const binding = path.scope.getBinding(wrapper)
+            if (binding && binding.path) {
+              binding.path.remove()
+            }
+            path.remove()
+            state.opts.setDirty(true)
+            break
           }
-          path.remove()
-          state.opts.setDirty(true)
         }
       },
     },
@@ -284,6 +289,9 @@ async function reactMigrate(file) {
       [
         reactMigratePlugin,
         {
+          /**
+           * @param {boolean} value
+           */
           setDirty: (value) => {
             dirty = value
           },
