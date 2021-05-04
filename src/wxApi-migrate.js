@@ -9,7 +9,8 @@ const { WXAPI_DIR } = require('./utils/config')
 const { isExists } = require('./utils/file')
 const { writeAndPrettierFile, transformFile } = require('./utils/transform')
 
-const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts', 'share.ts', 'share.h5.ts']
+const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts', 'share.ts']
+const FILES_TO_REMOVE = ['share.h5.ts']
 
 /**
  * @template T
@@ -31,6 +32,30 @@ const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts', 'share.ts', 's
  * @typedef {import('@babel/types').BlockStatement} BlockStatement
  * @typedef {{setDirty: (dirty: boolean) => void}} Options
  */
+
+async function removeFiles() {
+  try {
+    const BAK = path.join(WXAPI_DIR, '.bak')
+
+    if (!(await isExists(BAK))) {
+      await fsp.mkdir(BAK)
+    }
+
+    for (const file of FILES_TO_REMOVE) {
+      const src = path.join(WXAPI_DIR, file)
+      if (await isExists(src)) {
+        await fsp.rename(src, path.join(BAK, file))
+      }
+    }
+  } catch (err) {
+    throw new Error(
+      `移除文件失败：${err.message}, 请手动移除：\n\n` +
+        FILES_TO_REMOVE.map((i) => {
+          return '\t' + path.join(WXAPI_DIR, i)
+        }).join('\n')
+    )
+  }
+}
 
 /**
  * 文件提替换
@@ -57,5 +82,6 @@ async function replaceFiles() {
 }
 
 module.exports = function () {
+  processor.addTask('移除 wxApi 代码', removeFiles)
   processor.addTask('替换 wxApi 代码', replaceFiles)
 }
