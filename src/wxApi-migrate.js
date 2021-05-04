@@ -9,7 +9,7 @@ const { WXAPI_DIR } = require('./utils/config')
 const { isExists } = require('./utils/file')
 const { writeAndPrettierFile, transformFile } = require('./utils/transform')
 
-const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts']
+const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts', 'share.ts', 'share.h5.ts']
 
 /**
  * @template T
