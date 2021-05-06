@@ -6,7 +6,7 @@ const fsp = fs.promises
 const path = require('path')
 const processor = require('./process')
 const { PLATFORM_DIR } = require('./utils/config')
-const { isExists } = require('./utils/file')
+const { isExists, rm } = require('./utils/file')
 const { writeAndPrettierFile, transformFile } = require('./utils/transform')
 const { removeImportSource } = require('./utils/babel')
 
@@ -67,17 +67,9 @@ function removeRefPlugin(babel) {
 
 async function removeFiles() {
   try {
-    const BAK = path.join(PLATFORM_DIR, '.bak')
-
-    if (!(await isExists(BAK))) {
-      await fsp.mkdir(BAK)
-    }
-
     for (const file of FILES_TO_REMOVE) {
       const src = path.join(PLATFORM_DIR, file)
-      if (await isExists(src)) {
-        await fsp.rename(src, path.join(BAK, file))
-      }
+      await rm(src)
     }
   } catch (err) {
     throw new Error(

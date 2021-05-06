@@ -1,23 +1,23 @@
 // @ts-check
-const fs = require('fs').promises;
+const fs = require('fs').promises
 
 /** @type {Map<string, string>} */
-const cache = new Map();
+const cache = new Map()
 /** @type {Map<string, string[]>} */
-const dirCache = new Map();
+const dirCache = new Map()
 
 /**
  * @param {string} p
  * @returns {Promise<string[]>}
  */
 async function readdir(p) {
-  const cache = dirCache.get(p);
+  const cache = dirCache.get(p)
   if (cache) {
-    return cache;
+    return cache
   }
-  const contents = await fs.readdir(p);
-  dirCache.set(p, contents);
-  return contents;
+  const contents = await fs.readdir(p)
+  dirCache.set(p, contents)
+  return contents
 }
 
 /**
@@ -26,10 +26,10 @@ async function readdir(p) {
  */
 async function isExists(path) {
   try {
-    await fs.access(path);
-    return true;
+    await fs.access(path)
+    return true
   } catch (err) {
-    return false;
+    return false
   }
 }
 
@@ -38,15 +38,39 @@ async function isExists(path) {
  * @param {string} file
  */
 async function readFile(file) {
-  const c = cache.get(file);
+  const c = cache.get(file)
   if (c) {
-    return c;
+    return c
   }
 
-  const content = (await fs.readFile(file)).toString();
-  cache.set(file, content);
+  const content = (await fs.readFile(file)).toString()
+  cache.set(file, content)
 
-  return content;
+  return content
+}
+
+/**
+ * 删除文件或目录
+ * @param {string} fileOrDir
+ */
+async function rm(fileOrDir) {
+  try {
+    const stat = await fs.stat(fileOrDir)
+    if (stat.isDirectory()) {
+      dirCache.delete(fileOrDir)
+      await fs.rmdir(fileOrDir, { recursive: true })
+    } else {
+      cache.delete(fileOrDir)
+      await fs.unlink(fileOrDir)
+    }
+  } catch (err) {
+    if (err.code && err.code === 'EEXIST') {
+      // 忽略报错
+      return
+    }
+
+    throw err
+  }
 }
 
 /**
@@ -55,8 +79,8 @@ async function readFile(file) {
  * @param {string} content
  */
 async function writeFile(file, content) {
-  await fs.writeFile(file, content);
-  cache.set(file, content);
+  await fs.writeFile(file, content)
+  cache.set(file, content)
 }
 
 module.exports = {
@@ -64,4 +88,5 @@ module.exports = {
   writeFile,
   readdir,
   isExists,
-};
+  rm,
+}

@@ -1,8 +1,11 @@
 /**
  * React API 重写
  */
+const path = require('path')
 const { removeImportIfEmpty } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
+const { rm } = require('./utils/file')
+const { ROOT } = require('./utils/config')
 const processor = require('./process')
 
 /**
@@ -27,6 +30,23 @@ const processor = require('./process')
  */
 
 const MODULE_TO_REMOVE = ['@tarojs/taro']
+const FILES_TO_REMOVE = ['src/hoc/index.h5.ts']
+
+async function removeFiles() {
+  try {
+    for (const file of FILES_TO_REMOVE) {
+      const src = path.join(ROOT, file)
+      await rm(src)
+    }
+  } catch (err) {
+    throw new Error(
+      `移除文件失败：${err.message}, 请手动移除：\n\n` +
+        FILES_TO_REMOVE.map((i) => {
+          return '\t' + path.join(ROOT, i)
+        }).join('\n')
+    )
+  }
+}
 
 /**
  * 移除死代码
@@ -71,5 +91,6 @@ function removeUnused(file) {
 }
 
 module.exports = () => {
+  processor.addTask('移除废弃文件', removeFiles)
   processor.addProcess(processor.ALL_REGEXP, '移除死代码', removeUnused)
 }

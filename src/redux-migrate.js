@@ -1,7 +1,7 @@
 /**
  * React API 重写
  */
-const { addNamedImport, addDefaultImport, removeNamedImport, getNamedImport } = require('./utils/babel')
+const { getNamedImport } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
 const processor = require('./process')
 const { ALL_REGEXP } = require('./process')
