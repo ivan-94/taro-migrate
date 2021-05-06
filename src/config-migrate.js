@@ -137,12 +137,22 @@ async function taroBuildConfigMigrate() {
               if (t.isIdentifier(path.node.id) && path.node.id.name === 'config') {
                 const config = /** @type {NodePath<ObjectExpression>} */ (path.get('init'))
                 removeProperties(config, ['plugins', 'babel', 'uglify', 'csso', 'terser'])
+
+                // 更新插件
                 config.node.properties.unshift(
                   t.objectProperty(
                     t.identifier('plugins'),
-                    t.arrayExpression([t.stringLiteral('taro-plugin-react-devtools')])
+                    t.arrayExpression([
+                      t.stringLiteral('taro-plugin-react-devtools'),
+                      t.arrayExpression([
+                        t.stringLiteral('taro-plugin-polymorphic'),
+                        t.objectExpression([t.objectProperty(t.identifier('typeName'), t.stringLiteral('INDUSTRY'))]),
+                      ]),
+                    ])
                   )
                 )
+
+                // 使用 react 框架
                 config.node.properties.unshift(t.objectProperty(t.identifier('framework'), t.stringLiteral('react')))
 
                 // @ts-ignore

@@ -134,7 +134,9 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
   '@tarojs/webpack-runner',
 
   // Taro React Devtools
-  'taro-plugin-react-devtools'
+  'taro-plugin-react-devtools',
+  // 多业态文件支持
+  'taro-plugin-polymorphic',
 ]
 
 // Taro 依赖
