@@ -132,6 +132,9 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
   '@tarojs/mini-runner',
   '@tarojs/rn-runner',
   '@tarojs/webpack-runner',
+
+  // Taro React Devtools
+  'taro-plugin-react-devtools'
 ]
 
 // Taro 依赖

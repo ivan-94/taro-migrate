@@ -137,6 +137,12 @@ async function taroBuildConfigMigrate() {
               if (t.isIdentifier(path.node.id) && path.node.id.name === 'config') {
                 const config = /** @type {NodePath<ObjectExpression>} */ (path.get('init'))
                 removeProperties(config, ['plugins', 'babel', 'uglify', 'csso', 'terser'])
+                config.node.properties.unshift(
+                  t.objectProperty(
+                    t.identifier('plugins'),
+                    t.arrayExpression([t.stringLiteral('taro-plugin-react-devtools')])
+                  )
+                )
                 config.node.properties.unshift(t.objectProperty(t.identifier('framework'), t.stringLiteral('react')))
 
                 // @ts-ignore
