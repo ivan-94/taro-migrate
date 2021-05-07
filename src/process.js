@@ -20,6 +20,13 @@ const tasks = []
 module.exports = new (class extends EventEmitter {
   ALL_REGEXP = /.*/
   COMPONENT_REGEXP = /\.(tsx|jsx)$/
+
+  /**
+   * @param {number} code
+   */
+  exit(code = -1) {
+    process.exit(code)
+  }
   /**
    * @param {RegExp} reg
    * @param {string} name
