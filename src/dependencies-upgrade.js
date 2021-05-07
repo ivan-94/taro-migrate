@@ -206,15 +206,6 @@ function removeOldDependencies() {
   removeDeps(PKG, DEV_DEPENDENCIES_TO_UPGRADE)
   removeDeps(PKG, DEPENDENCIES_TO_UPGRADE)
   savePackageJSON(PKG)
-
-  // 移除旧的迁移文件
-  if (fs.existsSync(OLD_MIGRATES)) {
-    fs.rmdirSync(OLD_MIGRATES, { recursive: true })
-  }
-
-  if (fs.existsSync(TARO_COMPONENTS)) {
-    fs.rmdirSync(TARO_COMPONENTS, { recursive: true })
-  }
 }
 
 /**
@@ -253,10 +244,25 @@ function addConfig() {
   })
 }
 
+function removeUnusedFiles() {
+  // 移除旧的迁移文件
+  if (fs.existsSync(OLD_MIGRATES)) {
+    fs.rmdirSync(OLD_MIGRATES, { recursive: true })
+  }
+
+  if (fs.existsSync(TARO_COMPONENTS)) {
+    fs.rmdirSync(TARO_COMPONENTS, { recursive: true })
+  }
+}
+
 module.exports = function upgradeDependencies() {
-  const exitIfFailed = () => process.exit(-1)
+  const exitIfFailed = () => {
+    console.error('更新依赖失败，请回退变更代码，再重试执行')
+    process.exit(-1)
+  }
   processor.addTask('初始化 npm 镜像', npmConfig, undefined, exitIfFailed)
   processor.addTask('移除旧模块', removeOldDependencies, undefined, exitIfFailed)
   processor.addTask('升级依赖', addDependencies, undefined, exitIfFailed)
   processor.addTask('添加配置文件', addConfig, undefined, exitIfFailed)
+  processor.addTask('移除废弃文件', removeUnusedFiles)
 }

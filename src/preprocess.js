@@ -2,8 +2,23 @@ const { parseAsync } = require('@babel/core')
 const { readFile } = require('./utils/file')
 const processor = require('./process')
 const { DEFAULT_BABEL_TRANSFORM_OPTIONS } = require('./utils/config')
+const ch = require('child_process')
 
 module.exports = () => {
+  processor.addTask(
+    '正在检查版本库',
+    async () => {
+      const res = ch.execSync('git diff --name-only').toString()
+      if (res.split('/n').filter(Boolean).length) {
+        throw new Error('请先暂存或回退本地变更代码，再执行迁移命令')
+      }
+    },
+    undefined,
+    () => {
+      process.exit(-1)
+    }
+  )
+
   processor.addTask(
     '正在进行初步语法检查',
     async ({ allFiles }) => {
@@ -29,7 +44,7 @@ module.exports = () => {
             return `${errors[file]}`
           })
           .join('\n\n')
-        throw new Error('请先修复以下语法错误: \n\n' + message)
+        throw new Error('请先修复以下语法错误, 再重新运行命令: \n\n' + message)
       }
     },
     undefined,
