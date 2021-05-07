@@ -3,6 +3,7 @@ const { EventEmitter } = require('events')
 const { getDefault } = require('./utils')
 const chalk = getDefault(require('chalk'))
 const { getAllScripts } = require('./utils')
+const { clearCache } = require('./utils/file')
 
 /**
  * @type {{[file: string]: Array<string>}}
@@ -101,6 +102,9 @@ module.exports = new (class extends EventEmitter {
 
     this.emit('task-done')
     this.emit('process-start')
+
+    // 清空缓存
+    clearCache()
 
     // 重新获取，可能被干掉了
     allFiles = await getAllScripts()

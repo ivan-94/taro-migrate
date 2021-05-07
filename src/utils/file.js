@@ -6,6 +6,11 @@ const cache = new Map()
 /** @type {Map<string, string[]>} */
 const dirCache = new Map()
 
+function clearCache() {
+  cache.clear()
+  dirCache.clear()
+}
+
 /**
  * @param {string} p
  * @returns {Promise<string[]>}
@@ -89,4 +94,5 @@ module.exports = {
   readdir,
   isExists,
   rm,
+  clearCache,
 }
