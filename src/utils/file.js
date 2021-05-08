@@ -69,7 +69,7 @@ async function rm(fileOrDir) {
       await fs.unlink(fileOrDir)
     }
   } catch (err) {
-    if (err.code && err.code === 'EEXIST') {
+    if (err.code && (err.code === 'EEXIST' || err.code === 'ENOENT')) {
       // 忽略报错
       return
     }

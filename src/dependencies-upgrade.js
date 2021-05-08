@@ -5,7 +5,8 @@ const fs = require('fs')
 const path = require('path')
 const processor = require('./process')
 const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = require('./utils')
-const { ROOT, OLD_MIGRATES, TARO_COMPONENTS, YARN_LOCK, PACKAGE_LOCK } = require('./utils/config')
+const { rm } = require('./utils/file')
+const { ROOT, OLD_MIGRATES, TARO_COMPONENTS, YARN_LOCK, PACKAGE_LOCK, NPM_CONFIG } = require('./utils/config')
 
 const TARO_VERSION = '3.2.6'
 const PKG = readPackageJSON()
@@ -244,14 +245,14 @@ function addConfig() {
   })
 }
 
-function removeUnusedFiles() {
-  // 移除旧的迁移文件
-  if (fs.existsSync(OLD_MIGRATES)) {
-    fs.rmdirSync(OLD_MIGRATES, { recursive: true })
-  }
+const FILES_TO_REMOVE = [OLD_MIGRATES, TARO_COMPONENTS, NPM_CONFIG]
 
-  if (fs.existsSync(TARO_COMPONENTS)) {
-    fs.rmdirSync(TARO_COMPONENTS, { recursive: true })
+/**
+ * 移除不需要的文件
+ */
+async function removeUnusedFiles() {
+  for (const file of FILES_TO_REMOVE) {
+    await rm(file)
   }
 }
 

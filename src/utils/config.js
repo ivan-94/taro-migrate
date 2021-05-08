@@ -10,6 +10,7 @@ const PLATFORM_DIR = path.join(ROOT, './src/wxat-common/utils/platform')
 const WXAPI_DIR = path.join(ROOT, './src/wxat-common/utils/wxApi')
 const OLD_MIGRATES = path.join(ROOT, 'migrates')
 const TARO_COMPONENTS = path.join(ROOT, 'taro')
+const NPM_CONFIG = path.join(ROOT, '.npmrc')
 const YARN_LOCK = path.join(ROOT, 'yarn.lock')
 const PACKAGE_LOCK = path.join(ROOT, 'package-lock.json')
 
@@ -55,6 +56,7 @@ module.exports = {
   WXAPI_DIR,
   TARO_CONFIG,
   OLD_MIGRATES,
+  NPM_CONFIG,
   YARN_LOCK,
   PACKAGE_LOCK,
   TARO_COMPONENTS,
