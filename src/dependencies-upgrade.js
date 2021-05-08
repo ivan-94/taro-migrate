@@ -54,6 +54,7 @@ const DEPENDENCIES_TO_REMOVE = [
   'diff',
   '@types/diff',
   '@types/babel__core',
+  '@types/prettier',
 ]
 
 /**
@@ -138,6 +139,8 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
   'taro-plugin-react-devtools',
   // 多业态文件支持
   'taro-plugin-polymorphic',
+  // 分析模式
+  'taro-plugin-webpack-analyze',
 ]
 
 // Taro 依赖

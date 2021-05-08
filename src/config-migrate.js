@@ -148,6 +148,7 @@ async function taroBuildConfigMigrate() {
                         t.stringLiteral('taro-plugin-polymorphic'),
                         t.objectExpression([t.objectProperty(t.identifier('typeName'), t.stringLiteral('INDUSTRY'))]),
                       ]),
+                      t.stringLiteral('taro-plugin-webpack-analyze'),
                     ])
                   )
                 )
@@ -165,19 +166,6 @@ async function taroBuildConfigMigrate() {
                   'fontUrlLoaderOption',
                 ])
 
-                mini.node.properties.unshift(
-                  t.objectMethod(
-                    'method',
-                    t.identifier('webpackChain'),
-                    [t.identifier('config')],
-                    /** @type {BlockStatement}*/ (template.ast(`{
-                    if (analyzeMode) {
-                      config.plugin('analyzer').use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin, []);
-                    }
-                  }`))
-                  )
-                )
-
                 // @ts-ignore
                 const h5 = /** @type {NodePath<ObjectExpression>} */ (getProperty(config, 'h5').get('value'))
                 removeProperties(h5, ['webpackChain'])
@@ -190,9 +178,6 @@ async function taroBuildConfigMigrate() {
                     [t.identifier('config')],
                     /** @type {BlockStatement}*/ (template.ast(`{
                     config.resolve.alias.set('@tarojs/components$', 'wk-taro-components-react/index');
-                    if (analyzeMode) {
-                      config.plugin('analyzer').use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin, []);
-                    }
                   }`))
                   )
                 )
