@@ -30,6 +30,7 @@ function execCommand(cmd) {
 }
 
 function readPackageJSON() {
+  delete require.cache[PKG_PATH]
   return require(PKG_PATH)
 }
 

@@ -6,7 +6,15 @@ const path = require('path')
 const processor = require('./processor')
 const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = require('./utils')
 const { rm } = require('./utils/file')
-const { ROOT, OLD_MIGRATES, TARO_COMPONENTS, YARN_LOCK, PACKAGE_LOCK, NPM_CONFIG } = require('./utils/config')
+const {
+  ROOT,
+  OLD_MIGRATES,
+  TARO_COMPONENTS,
+  NODE_MODULES,
+  YARN_LOCK,
+  PACKAGE_LOCK,
+  NPM_CONFIG,
+} = require('./utils/config')
 
 const TARO_VERSION = '3.2.7'
 const PKG = readPackageJSON()
@@ -49,6 +57,7 @@ const DEPENDENCIES_TO_REMOVE = [
   'regenerator-runtime',
   'terser-webpack-plugin',
   'image-webpack-loader',
+  'webpack-bundle-analyzer',
 
   // 迁移脚本
   'diff',
@@ -193,6 +202,11 @@ function npmConfig() {
  * 移除旧的依赖
  */
 function removeOldDependencies() {
+  if (fs.existsSync(NODE_MODULES)) {
+    console.log('正在删除 node_modules...')
+    fs.rmdirSync(NODE_MODULES, { recursive: true })
+  }
+
   const depsToRemove = ignoreUnExistedDeps(DEPENDENCIES_TO_REMOVE)
   if (depsToRemove.length) {
     removeDeps(PKG, depsToRemove)
@@ -243,7 +257,7 @@ function addDependencies() {
 
 function addConfig() {
   const base = path.join(__dirname, './template')
-  ;['.eslintrc.js', 'babel.config.js'].forEach((name) => {
+  ;['.eslintrc.js', 'babel.config.js', '.npmrc'].forEach((name) => {
     fs.copyFileSync(path.join(base, name), path.join(ROOT, name))
   })
 }
@@ -267,6 +281,6 @@ module.exports = function upgradeDependencies() {
   processor.addTask('初始化 npm 镜像', npmConfig, undefined, exitIfFailed)
   processor.addTask('移除旧模块', removeOldDependencies, undefined, exitIfFailed)
   processor.addTask('升级依赖', addDependencies, undefined, exitIfFailed)
-  processor.addTask('添加配置文件', addConfig, undefined, exitIfFailed)
   processor.addTask('移除废弃文件', removeUnusedFiles)
+  processor.addTask('添加配置文件', addConfig, undefined, exitIfFailed)
 }

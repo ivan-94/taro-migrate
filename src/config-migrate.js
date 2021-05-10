@@ -7,6 +7,7 @@ const processor = require('./processor')
 const pathUtils = require('path')
 const { readConfig } = require('@tarojs/helper')
 const { isExists } = require('./utils/file')
+const { readPackageJSON, savePackageJSON } = require('./utils/index')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
 const { ROOT, TARO_CONFIG, APP_ENTRY, APP_CONFIG } = require('./utils/config')
 const { removeProperties, getProperty } = require('./utils/babel')
@@ -186,6 +187,18 @@ async function taroBuildConfigMigrate() {
                 // h5.node.properties.unshift(t.objectProperty(t.identifier('useHtmlComponents'), t.booleanLiteral(true)))
               }
             },
+            ObjectProperty(path) {
+              // 移除 autoprefixer browserlist
+              if (t.isIdentifier(path.node.key) && path.node.key.name === 'autoprefixer') {
+                path.traverse({
+                  ObjectProperty(subPath) {
+                    if (t.isIdentifier(subPath.node.key) && subPath.node.key.name === 'config') {
+                      subPath.remove()
+                    }
+                  },
+                })
+              }
+            },
           },
         }
       },
@@ -306,9 +319,16 @@ async function addMissingPageConfig() {
   }
 }
 
+async function pkgUpgrade() {
+  const pkg = readPackageJSON()
+  pkg.browserslist = ['Chrome >= 49', 'ios >= 10']
+  savePackageJSON(pkg)
+}
+
 module.exports = async function configMigrate() {
   processor.addTask('升级 Taro 构建配置', taroBuildConfigMigrate)
   processor.addTask('移除 app.tsx 页面引用', removePageIndex)
+  processor.addTask('升级 package.json', pkgUpgrade)
   processor.addProcess(processor.COMPONENT_REGEXP, '页面配置提取', pageConfigMigrate)
   processor.on('process-done', () => {
     processor.addTask('补全缺失的页面配置', addMissingPageConfig)

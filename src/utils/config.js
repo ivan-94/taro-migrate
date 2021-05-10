@@ -8,6 +8,7 @@ const APP_CONFIG = path.join(ROOT, './src/app.config.ts')
 const TARO_CONFIG = path.join(ROOT, 'config/index.js')
 const PLATFORM_DIR = path.join(ROOT, './src/wxat-common/utils/platform')
 const WXAPI_DIR = path.join(ROOT, './src/wxat-common/utils/wxApi')
+const NODE_MODULES = path.join(ROOT, 'node_modules')
 const OLD_MIGRATES = path.join(ROOT, 'migrates')
 const TARO_COMPONENTS = path.join(ROOT, 'taro')
 const NPM_CONFIG = path.join(ROOT, '.npmrc')
@@ -56,6 +57,7 @@ module.exports = {
   WXAPI_DIR,
   TARO_CONFIG,
   OLD_MIGRATES,
+  NODE_MODULES,
   NPM_CONFIG,
   YARN_LOCK,
   PACKAGE_LOCK,
