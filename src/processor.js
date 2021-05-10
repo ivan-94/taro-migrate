@@ -23,6 +23,11 @@ module.exports = new (class extends EventEmitter {
   COMPONENT_REGEXP = /\.(tsx|jsx)$/
 
   /**
+   * @type {{ignoreSubmodules?: boolean, removeHocs?: string[]}}
+   */
+  options = {}
+
+  /**
    * @param {number} code
    */
   exit(code = -1) {

@@ -1,6 +1,6 @@
 const { parseAsync } = require('@babel/core')
 const { readFile } = require('./utils/file')
-const processor = require('./process')
+const processor = require('./processor')
 const { DEFAULT_BABEL_TRANSFORM_OPTIONS } = require('./utils/config')
 const ch = require('child_process')
 const { shouldUseYarn, readPackageJSON, getDep } = require('./utils')
@@ -9,7 +9,9 @@ module.exports = () => {
   processor.addTask(
     '正在检查版本库',
     async () => {
-      const res = ch.execSync('git diff --name-only').toString()
+      const res = ch
+        .execSync(`git diff --name-only ${processor.options.ignoreSubmodules ? '--ignore-submodules' : ''}`)
+        .toString()
       if (res.split('/n').filter(Boolean).length) {
         throw new Error('请先暂存或回退本地变更代码，再执行迁移命令')
       }

@@ -6,7 +6,7 @@ const { removeImportIfEmpty } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
 const { rm } = require('./utils/file')
 const { ROOT } = require('./utils/config')
-const processor = require('./process')
+const processor = require('./processor')
 
 /**
  * @template T

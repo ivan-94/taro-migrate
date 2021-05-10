@@ -3,7 +3,7 @@
  */
 const fs = require('fs')
 const path = require('path')
-const processor = require('./process')
+const processor = require('./processor')
 const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = require('./utils')
 const { rm } = require('./utils/file')
 const { ROOT, OLD_MIGRATES, TARO_COMPONENTS, YARN_LOCK, PACKAGE_LOCK, NPM_CONFIG } = require('./utils/config')

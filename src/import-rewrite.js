@@ -3,7 +3,7 @@
  */
 const { transformFile } = require('./utils/transform')
 const { addNamedImport, addDefaultImport, removeImportSource } = require('./utils/babel')
-const processor = require('./process')
+const processor = require('./processor')
 
 /**
  * @template T

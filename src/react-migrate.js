@@ -3,7 +3,7 @@
  */
 const { addNamedImport, addDefaultImport, removeNamedImport } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
-const processor = require('./process')
+const processor = require('./processor')
 
 /**
  * @template T
@@ -57,12 +57,10 @@ const unknowHocs = new Set()
 /**
  * 需要被移除的 HOC
  */
-const HOC_TO_REMOVE = (process.env.HOC_TO_REMOVE
-  ? process.env.HOC_TO_REMOVE.split(',')
-      .filter(Boolean)
-      .map((i) => i.trim())
-  : []
-).concat(['WKPage'])
+const HOC_TO_REMOVE = (processor.options.removeHocs || [])
+  .filter(Boolean)
+  .map((i) => i.trim())
+  .concat(['WKPage'])
 
 /**
  * React API 重写

@@ -3,8 +3,7 @@
  */
 const { getNamedImport } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
-const processor = require('./process')
-const { ALL_REGEXP } = require('./process')
+const processor = require('./processor')
 
 /**
  * @template T
@@ -97,5 +96,5 @@ async function reduxMigrate(file) {
  * 必须在 import-rewrite 之后执行
  */
 module.exports = function () {
-  processor.addProcess(ALL_REGEXP, 'Redux connect 参数设置', reduxMigrate)
+  processor.addProcess(processor.ALL_REGEXP, 'Redux connect 参数设置', reduxMigrate)
 }

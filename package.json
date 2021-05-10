@@ -31,11 +31,12 @@
     "@babel/core": "^7.13.16",
     "@tarojs/helper": "^3.2.7",
     "@tarojs/taro": "^3.2.7",
-    "prettier": "^2.2.1",
     "chalk": "^4.1.1",
+    "commander": "^7.2.0",
     "debug": "^4.3.1",
     "diff": "^5.0.0",
-    "glob": "^7.1.6"
+    "glob": "^7.1.6",
+    "prettier": "^2.2.1"
   },
   "main": "src/index.js",
   "repository": {

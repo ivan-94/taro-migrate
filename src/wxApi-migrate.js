@@ -4,7 +4,7 @@
 const fs = require('fs')
 const fsp = fs.promises
 const path = require('path')
-const processor = require('./process')
+const processor = require('./processor')
 const { WXAPI_DIR } = require('./utils/config')
 const { isExists, rm } = require('./utils/file')
 const { writeAndPrettierFile } = require('./utils/transform')

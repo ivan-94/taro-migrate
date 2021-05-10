@@ -3,7 +3,7 @@
  */
 const path = require('path')
 const fs = require('fs')
-const processor = require('./process')
+const processor = require('./processor')
 const pathUtils = require('path')
 const { readConfig } = require('@tarojs/helper')
 const { isExists } = require('./utils/file')
