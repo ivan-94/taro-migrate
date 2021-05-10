@@ -1,6 +1,6 @@
 {
   "name": "taro-migrate",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Taro 3.x 迁移，兼容性迁移",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -8,12 +8,16 @@
   "bin": {
     "taro-migrate": "bin/taro-migrate"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "files": [
     "bin",
     "src"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "ivan",
+  "license": "MIT",
   "devDependencies": {
     "@types/babel__core": "^7.1.14",
     "@types/debug": "^4.1.5",
@@ -25,12 +29,26 @@
   },
   "dependencies": {
     "@babel/core": "^7.13.16",
-    "@tarojs/helper": "^3.2.2-beta.0",
+    "@tarojs/helper": "^3.2.7",
     "@tarojs/taro": "^3.2.7",
     "prettier": "^2.2.1",
     "chalk": "^4.1.1",
     "debug": "^4.3.1",
     "diff": "^5.0.0",
     "glob": "^7.1.6"
-  }
+  },
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivan-94/taro-migrate.git"
+  },
+  "keywords": [
+    "taro3.x",
+    "wakedata",
+    "taro-migrate"
+  ],
+  "bugs": {
+    "url": "https://github.com/ivan-94/taro-migrate/issues"
+  },
+  "homepage": "https://github.com/ivan-94/taro-migrate#readme"
 }

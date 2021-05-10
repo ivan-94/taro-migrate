@@ -8,7 +8,7 @@ const { execCommand, readPackageJSON, hasDep, removeDeps, savePackageJSON } = re
 const { rm } = require('./utils/file')
 const { ROOT, OLD_MIGRATES, TARO_COMPONENTS, YARN_LOCK, PACKAGE_LOCK, NPM_CONFIG } = require('./utils/config')
 
-const TARO_VERSION = '3.2.6'
+const TARO_VERSION = '3.2.7'
 const PKG = readPackageJSON()
 /**
  * 是否启用了 RN
