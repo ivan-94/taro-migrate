@@ -18,7 +18,7 @@ const { removeProperties, getProperty } = require('./utils/babel')
  */
 /**
  * @template O
- * @typedef {import('@babel/core').PluginPass & {opts: O}} State
+ * @typedef {import('@babel/core').PluginPass & {opts: O, enablePullDownRefresh: boolean}} State
  */
 /**
  * @template T
@@ -50,6 +50,7 @@ function configExtraPlugin(babel) {
             return
           }
 
+          state.opts.setDirty(true)
           const node = /** @type {BabelNode} */ (state.value)
           let preval = false
 
@@ -74,9 +75,37 @@ function configExtraPlugin(babel) {
               `const config = require('./${base + '.preval.js'}'); \n export default config`
             )
           } else {
+            // 添加 开启下拉刷新
+            if (state.enablePullDownRefresh) {
+              let hasEnablePullDownRefresh = false
+              state.path.traverse({
+                ObjectProperty(p) {
+                  if (t.isIdentifier(p.node.key) && p.node.key.name === 'enablePullDownRefresh') {
+                    hasEnablePullDownRefresh = true
+                    p.stop()
+                  }
+                },
+              })
+
+              if (!hasEnablePullDownRefresh) {
+                state.path.traverse({
+                  ObjectExpression(p) {
+                    p.node.properties.push(
+                      t.objectProperty(t.identifier('enablePullDownRefresh'), t.booleanLiteral(true))
+                    )
+                  },
+                })
+              }
+            }
+
             // 输出文件
             const ast = t.exportDefaultDeclaration(/** @type {TaggedTemplateExpression} */ (state.value))
             writeASTToFile(configFilePath, ast)
+          }
+
+          if (state.path) {
+            // @ts-expect-error
+            state.path.remove()
           }
         },
       },
@@ -86,13 +115,30 @@ function configExtraPlugin(babel) {
         if (t.isIdentifier(node.key) && node.key.name === 'config') {
           // 包含配置文件
           state.value = node.value
-          path.remove()
-          state.opts.setDirty(true)
+          state.path = path
+        }
+
+        // 有下拉刷新
+        if (t.isIdentifier(node.key) && node.key.name === 'onPullDownRefresh') {
+          state.enablePullDownRefresh = true
+        }
+      },
+      ClassMethod(path, state) {
+        const node = path.node
+
+        // 有下拉刷新
+        if (t.isIdentifier(node.key) && node.key.name === 'onPullDownRefresh') {
+          state.enablePullDownRefresh = true
+        }
+      },
+      CallExpression(path, state) {
+        if (t.isIdentifier(path.node.callee) && path.node.callee.name === 'usePullDownRefresh') {
+          state.enablePullDownRefresh = true
         }
       },
       // 函数式组件
       ExpressionStatement(path, state) {
-        // 底层语句
+        // 顶层语句
         if (!path.parentPath.isProgram() || !path.get('expression').isAssignmentExpression()) {
           return
         }
@@ -109,8 +155,7 @@ function configExtraPlugin(babel) {
 
         // 找到了
         state.value = assignValue.node
-        path.remove()
-        state.opts.setDirty(true)
+        state.path = path
       },
     },
   }

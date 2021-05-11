@@ -11,6 +11,8 @@ let ErrorPage: FC = (props) => {
     Taro.eventCenter.trigger('resetup')
   }
 
+  usePullDownRefresh(() => {})
+
   useEffect(() => {
     if (!loginError) {
       // 回退
