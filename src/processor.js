@@ -1,6 +1,7 @@
 const fs = require('fs')
+const path = require('path')
 const { EventEmitter } = require('events')
-const { getDefault } = require('./utils')
+const { getDefault, getPages } = require('./utils')
 const chalk = getDefault(require('chalk'))
 const { getAllScripts } = require('./utils')
 const { clearCache } = require('./utils/file')
@@ -10,7 +11,7 @@ const { clearCache } = require('./utils/file')
  */
 const messageBox = {}
 /**
- * @type {Map<RegExp, Array<[string, (file: string) => Promise<void>]>>}
+ * @type {Map<RegExp, Array<[string, (file: string, isPage: boolean) => Promise<void>]>>}
  */
 const processor = new Map()
 /**
@@ -36,7 +37,7 @@ module.exports = new (class extends EventEmitter {
   /**
    * @param {RegExp} reg
    * @param {string} name
-   * @param {(file: string) => Promise<any>} handler
+   * @param {(file: string, isPage: boolean) => Promise<any>} handler
    */
   addProcess(reg, name, handler) {
     const map = processor.get(reg)
@@ -113,15 +114,19 @@ module.exports = new (class extends EventEmitter {
 
     // 重新获取，可能被干掉了
     allFiles = await getAllScripts()
+    const pages = await getPages()
+    const normalizePages = new Set(pages.map((i) => path.normalize(i)))
 
     for (const file of allFiles) {
-      console.log(`* 正在处理:  ${file}`)
-      for (const [reg, tasks] of processor) {
+      const normalize = path.normalize(path.join(path.dirname(file), path.basename(file, path.extname(file))))
+      const isPage = normalizePages.has(normalize)
+      console.log(`* 正在处理: ${isPage ? '页面' : ''}  ${file}`)
+      for (const [reg, transformer] of processor) {
         if (file.match(reg)) {
-          for (const [name, handler] of tasks) {
+          for (const [name, handler] of transformer) {
             try {
               console.log('\t' + `正在执行 ${name}`)
-              await handler(file)
+              await handler(file, isPage)
               console.log('\t\t' + chalk.green(`执行 ${name} 成功`))
             } catch (err) {
               const message = `执行 ${name} 失败, 请手动修改：${err.message}`

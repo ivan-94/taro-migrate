@@ -5,9 +5,8 @@ const path = require('path')
 const fs = require('fs')
 const processor = require('./processor')
 const pathUtils = require('path')
-const { readConfig } = require('@tarojs/helper')
 const { isExists } = require('./utils/file')
-const { readPackageJSON, savePackageJSON } = require('./utils/index')
+const { readPackageJSON, savePackageJSON, getPages } = require('./utils/index')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
 const { ROOT, TARO_CONFIG, APP_ENTRY, APP_CONFIG } = require('./utils/config')
 const { removeProperties, getProperty } = require('./utils/babel')
@@ -18,21 +17,20 @@ const { removeProperties, getProperty } = require('./utils/babel')
  */
 /**
  * @template O
- * @typedef {import('@babel/core').PluginPass & {opts: O, enablePullDownRefresh: boolean}} State
+ * @typedef {import('@babel/core').PluginPass & {opts: O, enablePullDownRefresh: boolean, path?: NodePath<any>}} State
  */
 /**
  * @template T
  * @typedef {import('@babel/core').PluginObj<State<T>>} PluginObj
  */
 /**
- * @typedef {import('@tarojs/taro').AppConfig} AppConfig
  * @typedef {import('@babel/core')} Babel
  * @typedef {import('@babel/traverse').Node} BabelNode
  * @typedef {import('@babel/types').ObjectExpression} ObjectExpression
  * @typedef {import('@babel/types').TaggedTemplateExpression} TaggedTemplateExpression
  * @typedef {import('@babel/types').BlockStatement} BlockStatement
  * @typedef {import('@babel/types').ClassDeclaration} ClassDeclaration
- * @typedef {{setDirty: (dirty: boolean) => void}} Options
+ * @typedef {{setDirty: (dirty: boolean) => void, isPage: boolean}} Options
  */
 
 /**
@@ -46,7 +44,7 @@ function configExtraPlugin(babel) {
     visitor: {
       Program: {
         exit(path, state) {
-          if (!state.value) {
+          if (!state.value || !state.path) {
             return
           }
 
@@ -103,10 +101,7 @@ function configExtraPlugin(babel) {
             writeASTToFile(configFilePath, ast)
           }
 
-          if (state.path) {
-            // @ts-expect-error
-            state.path.remove()
-          }
+          state.path.remove()
         },
       },
       // 类组件
@@ -240,14 +235,18 @@ async function taroBuildConfigMigrate() {
 /**
  * 配置文件提取
  * @param {string} file
+ * @param {boolean} isPage
  */
-async function pageConfigMigrate(file) {
+async function pageConfigMigrate(file, isPage) {
   let dirty = false
   const babelOption = {
     plugins: [
       [
         configExtraPlugin,
         {
+          /**
+           * @param {boolean} value
+           */
           setDirty: (value) => {
             dirty = value
           },
@@ -256,97 +255,103 @@ async function pageConfigMigrate(file) {
     ],
   }
 
-  return transformFile(file, babelOption, { shouldWrite: () => dirty })
+  await transformFile(file, babelOption, { shouldWrite: () => dirty })
+
+  if (isPage && !dirty) {
+    const p = path.join(path.dirname(file), path.basename(file, path.extname(file))) + '.config.ts'
+    if (!(await isExists(p))) {
+      console.log('\t正在补全页面配置文件: ' + p)
+      await writeAndPrettierFile(p, `export default {}`)
+    }
+  }
 }
 
-async function removePageIndex() {
-  return transformFile(APP_ENTRY, {
-    plugins: [
-      /**
-       * 移除 app.tsx 的页面应用
-       * @param {Babel} babel
-       * @returns {PluginObj<Options>}
-       */
-      function removePageIndexPlugin(babel) {
-        const { types: t } = babel
-        return {
-          visitor: {
-            Program(path) {
-              if (!path.node.body.some((i) => t.isExportDefaultDeclaration(i))) {
-                const clsDcl = /** @type {ClassDeclaration} */ (path.node.body.find((i) => t.isClassDeclaration(i)))
-                const name = clsDcl ? clsDcl.id.name : 'App'
-                path.node.body.push(t.exportDefaultDeclaration(t.identifier(name)))
-              }
-            },
-            JSXElement(path) {
-              if (
-                t.isJSXOpeningElement(path.node.openingElement) &&
-                t.isJSXIdentifier(path.node.openingElement.name) &&
-                path.node.openingElement.name.name === 'Provider'
-              ) {
-                // 替换 children
-                path.stop()
-
-                // 移除相关页面引用
-                path.get('children').forEach((child) =>
-                  child.traverse({
-                    JSXOpeningElement(subPath) {
-                      if (t.isJSXIdentifier(subPath.node.name)) {
-                        // 移除 绑定
-                        const binding = path.scope.getBinding(subPath.node.name.name)
-                        if (binding && binding.path) {
-                          const importDecl = binding.path.findParent((i) => i.isImportDeclaration())
-                          if (importDecl) {
-                            importDecl.remove()
-                          }
-                        }
-                      }
-                    },
-                  })
-                )
-
-                // 替换为 this.props.children
-                path.node.children = [
-                  t.jsxExpressionContainer(
-                    t.memberExpression(
-                      t.memberExpression(t.thisExpression(), t.identifier('props')),
-                      t.identifier('children')
-                    )
-                  ),
-                ]
-              }
+async function upgradeAppEntry() {
+  let dirty = false
+  await transformFile(
+    APP_ENTRY,
+    {
+      plugins: [
+        /**
+         * 提取 app.config
+         */
+        [
+          configExtraPlugin,
+          {
+            /**
+             * @param {boolean} value
+             */
+            setDirty: (value) => {
+              dirty = value
             },
           },
-        }
-      },
-    ],
-  })
-}
+        ],
+        /**
+         * 移除 app.tsx 的页面应用
+         * @param {Babel} babel
+         * @returns {PluginObj<Options>}
+         */
+        function removePageIndexPlugin(babel) {
+          const { types: t } = babel
+          return {
+            visitor: {
+              Program(path) {
+                if (!path.node.body.some((i) => t.isExportDefaultDeclaration(i))) {
+                  const clsDcl = /** @type {ClassDeclaration} */ (path.node.body.find((i) => t.isClassDeclaration(i)))
+                  const name = clsDcl ? clsDcl.id.name : 'App'
+                  path.node.body.push(t.exportDefaultDeclaration(t.identifier(name)))
+                }
+              },
+              JSXElement(path) {
+                if (
+                  t.isJSXOpeningElement(path.node.openingElement) &&
+                  t.isJSXIdentifier(path.node.openingElement.name) &&
+                  path.node.openingElement.name.name === 'Provider'
+                ) {
+                  // 替换 children
+                  path.stop()
 
-async function addMissingPageConfig() {
-  try {
-    const config = /** @type {AppConfig | null}*/ (readConfig(APP_CONFIG))
-    /** @type {string[]} */
-    let pages = []
-    if (config && config.pages) {
-      pages = config.pages
-    }
-    if (config && config.subPackages) {
-      config.subPackages.forEach((i) => {
-        pages = pages.concat((i.pages || []).map((j) => path.join(i.root, j)))
-      })
-    }
+                  // 移除相关页面引用
+                  path.get('children').forEach((child) =>
+                    child.traverse({
+                      JSXOpeningElement(subPath) {
+                        if (t.isJSXIdentifier(subPath.node.name)) {
+                          // 移除 绑定
+                          const binding = path.scope.getBinding(subPath.node.name.name)
+                          if (binding && binding.path) {
+                            const importDecl = binding.path.findParent((i) => i.isImportDeclaration())
+                            if (importDecl) {
+                              importDecl.remove()
+                            }
+                          }
+                        }
+                      },
+                    })
+                  )
 
-    // 补全page
-    for (const page of pages) {
-      const p = path.join(ROOT, './src', page) + '.config.ts'
-      if (!(await isExists(p))) {
-        console.log('正在补全页面配置文件: ' + p)
-        await writeAndPrettierFile(p, `export default {}`)
-      }
+                  // 替换为 this.props.children
+                  path.node.children = [
+                    t.jsxExpressionContainer(
+                      t.memberExpression(
+                        t.memberExpression(t.thisExpression(), t.identifier('props')),
+                        t.identifier('children')
+                      )
+                    ),
+                  ]
+                }
+              },
+            },
+          }
+        },
+      ],
+    },
+    {
+      shouldWrite: () => dirty,
     }
-  } catch (err) {
-    console.error()
+  )
+
+  if (!dirty) {
+    throw new Error('未找到 App 配置')
   }
 }
 
@@ -358,10 +363,7 @@ async function pkgUpgrade() {
 
 module.exports = async function configMigrate() {
   processor.addTask('升级 Taro 构建配置', taroBuildConfigMigrate)
-  processor.addTask('移除 app.tsx 页面引用', removePageIndex)
+  processor.addTask('移除 app.tsx 页面引用', upgradeAppEntry, undefined, () => processor.exit())
   processor.addTask('升级 package.json', pkgUpgrade)
   processor.addProcess(processor.COMPONENT_REGEXP, '页面配置提取', pageConfigMigrate)
-  processor.on('process-done', () => {
-    processor.addTask('补全缺失的页面配置', addMissingPageConfig)
-  })
 }

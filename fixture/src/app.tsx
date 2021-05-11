@@ -27,7 +27,6 @@ class App extends Component {
   config: Config = {
     pages: [
       'wxat-common/pages/home/index',
-      'wxat-common/pages/graph/list/index',
       'wxat-common/pages/about/index'
     ],
 

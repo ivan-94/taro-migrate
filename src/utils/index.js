@@ -1,9 +1,14 @@
 const debug = require('debug')('taro-migrate')
 const fs = require('fs')
 const { execSync } = require('child_process')
+const { readConfig } = require('@tarojs/helper')
 const path = require('path')
 const glob = require('glob')
-const { ROOT, JSX_EXT, SCRIPT_EXT, PKG_PATH } = require('./config')
+const { ROOT, JSX_EXT, SCRIPT_EXT, PKG_PATH, APP_CONFIG } = require('./config')
+
+/**
+ * @typedef {import('@tarojs/taro').AppConfig} AppConfig
+ */
 
 /**
  * 是否应该使用 yarn
@@ -101,6 +106,23 @@ async function getAllComponents() {
   return getAllFiles(JSX_EXT)
 }
 
+async function getPages() {
+  const config = /** @type {AppConfig | null}*/ (readConfig(APP_CONFIG))
+  /** @type {string[]} */
+  let pages = []
+  if (config && config.pages) {
+    pages = config.pages
+  }
+
+  if (config && config.subPackages) {
+    config.subPackages.forEach((i) => {
+      pages = pages.concat((i.pages || []).map((j) => path.join(i.root, j)))
+    })
+  }
+
+  return pages.map((i) => path.join(ROOT, './src', i))
+}
+
 /**
  * 获取所有脚本文件
  * @returns
@@ -129,4 +151,5 @@ module.exports = {
   getAllComponents,
   getAllScripts,
   removeDeps,
+  getPages,
 }

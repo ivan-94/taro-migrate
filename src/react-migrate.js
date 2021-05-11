@@ -29,7 +29,7 @@ const processor = require('./processor')
  * @typedef {import('@babel/types').BlockStatement} BlockStatement
  * @typedef {import('@babel/types').FunctionExpression} FunctionExpression
  * @typedef {import('@babel/types').Decorator} Decorator
- * @typedef {{setDirty: (dirty: boolean) => void}} Options
+ * @typedef {{setDirty: (dirty: boolean) => void, isPage: boolean}} Options
  * @typedef {{target: string, message: string}} RewriteDesc
  */
 
@@ -145,7 +145,7 @@ function reactMigratePlugin(babel) {
             })
 
             // 移除 WKComponent
-            if (!hasPageLifeCycles) {
+            if (state.opts.isPage || !hasPageLifeCycles) {
               hosToRemove.push('WKComponent')
             }
 
@@ -302,9 +302,10 @@ function reactMigratePlugin(babel) {
 
 /**
  *
- * @param {string} file
+ * @param {string} file}
+ * @param {boolean} isPage}
  */
-async function reactMigrate(file) {
+async function reactMigrate(file, isPage) {
   let dirty = false
   const babelOption = {
     plugins: [
@@ -317,6 +318,7 @@ async function reactMigrate(file) {
           setDirty: (value) => {
             dirty = value
           },
+          isPage,
         },
       ],
     ],
@@ -326,10 +328,13 @@ async function reactMigrate(file) {
 }
 
 module.exports = function () {
-  if (HOC_TO_REMOVE.length) {
-    console.log('待移除的高阶组件: ' + HOC_TO_REMOVE.join(','))
-  }
   processor.addProcess(processor.COMPONENT_REGEXP, 'React 用法迁移', reactMigrate)
+  processor.on('task-done', () => {
+    if (HOC_TO_REMOVE.length) {
+      console.log('\n\n待移除的高阶组件: ' + HOC_TO_REMOVE.join(',') + '\n\n')
+    }
+  })
+
   processor.on('process-done', () => {
     if (unknowHocs.size) {
       processor.addMessage(
