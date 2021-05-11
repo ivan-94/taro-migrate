@@ -150,6 +150,8 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
   'taro-plugin-polymorphic',
   // 分析模式
   'taro-plugin-webpack-analyze',
+  // H5 组件库覆盖
+  'taro-plugin-wk',
 ]
 
 // Taro 依赖

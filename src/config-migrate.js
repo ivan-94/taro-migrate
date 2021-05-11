@@ -150,6 +150,7 @@ async function taroBuildConfigMigrate() {
                         t.objectExpression([t.objectProperty(t.identifier('typeName'), t.stringLiteral('INDUSTRY'))]),
                       ]),
                       t.stringLiteral('taro-plugin-webpack-analyze'),
+                      t.stringLiteral('taro-plugin-wk'),
                     ])
                   )
                 )
@@ -170,21 +171,6 @@ async function taroBuildConfigMigrate() {
                 // @ts-ignore
                 const h5 = /** @type {NodePath<ObjectExpression>} */ (getProperty(config, 'h5').get('value'))
                 removeProperties(h5, ['webpackChain'])
-
-                // 支持组件覆盖
-                h5.node.properties.unshift(
-                  t.objectMethod(
-                    'method',
-                    t.identifier('webpackChain'),
-                    [t.identifier('config')],
-                    /** @type {BlockStatement}*/ (template.ast(`{
-                    config.resolve.alias.set('@tarojs/components$', 'wk-taro-components-react/index');
-                  }`))
-                  )
-                )
-
-                // 组件完全迁移后开启
-                // h5.node.properties.unshift(t.objectProperty(t.identifier('useHtmlComponents'), t.booleanLiteral(true)))
               }
             },
             ObjectProperty(path) {
