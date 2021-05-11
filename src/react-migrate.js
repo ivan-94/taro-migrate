@@ -3,6 +3,7 @@
  */
 const { addNamedImport, addDefaultImport, removeNamedImport } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
+const { PAGE_LIFECYCLES } = require('./utils/config')
 const processor = require('./processor')
 
 /**
@@ -126,25 +127,48 @@ function reactMigratePlugin(babel) {
            * 移除无用注解
            */
           const node = path.node
-          if (node.decorators && node.decorators.length && HOC_TO_REMOVE.length) {
-            for (const hoc of HOC_TO_REMOVE) {
-              const idx = node.decorators.findIndex(
-                (i) =>
-                  (t.isIdentifier(i.expression) && i.expression.name === hoc) ||
-                  (t.isCallExpression(i.expression) &&
-                    t.isIdentifier(i.expression.callee) &&
-                    i.expression.callee.name === hoc)
-              )
 
-              if (idx !== -1) {
-                // 移除
-                state.opts.setDirty(true)
-                node.decorators.splice(idx, 1)
+          if (node.decorators && node.decorators.length) {
+            const hosToRemove = [...HOC_TO_REMOVE]
+            let hasPageLifeCycles = false
+            /**
+             * 判断有没有必要用 @WKComponent
+             */
+            path.traverse({
+              // @ts-ignore
+              ['ClassMethod|ClassProperty'](p) {
+                if (t.isIdentifier(p.node.key) && PAGE_LIFECYCLES.includes(p.node.key.name)) {
+                  hasPageLifeCycles = true
+                  p.stop()
+                }
+              },
+            })
 
-                // 移除绑定
-                const binding = path.scope.getBinding(hoc)
-                if (binding && binding.path) {
-                  binding.path.remove()
+            // 移除 WKComponent
+            if (!hasPageLifeCycles) {
+              hosToRemove.push('WKComponent')
+            }
+
+            if (hosToRemove.length) {
+              for (const hoc of hosToRemove) {
+                const idx = node.decorators.findIndex(
+                  (i) =>
+                    (t.isIdentifier(i.expression) && i.expression.name === hoc) ||
+                    (t.isCallExpression(i.expression) &&
+                      t.isIdentifier(i.expression.callee) &&
+                      i.expression.callee.name === hoc)
+                )
+
+                if (idx !== -1) {
+                  // 移除
+                  state.opts.setDirty(true)
+                  node.decorators.splice(idx, 1)
+
+                  // 移除绑定
+                  const binding = path.scope.getBinding(hoc)
+                  if (binding && binding.path) {
+                    binding.path.remove()
+                  }
                 }
               }
             }

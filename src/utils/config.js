@@ -44,6 +44,22 @@ const JS_EXT = ['.js', '.jsx']
 const TS_EXT = ['.ts', '.tsx']
 const JSX_EXT = ['.tsx', '.jsx']
 const SCRIPT_EXT = JS_EXT.concat(TS_EXT)
+const PAGE_LIFECYCLES = [
+  'componentDidShow',
+  'componentDidHide',
+  'onPullDownRefresh',
+  'onReachBottom',
+  'onPageScroll',
+  'onResize',
+  'onShareAppMessage',
+  'onTabItemTap',
+  'onTitleClick',
+  'onOptionMenuClick',
+  'onPullIntercept',
+  'onShareTimeline',
+  'onAddToFavorites',
+  'onReady',
+]
 
 module.exports = {
   ROOT,
@@ -69,4 +85,6 @@ module.exports = {
   TS_EXT,
   SCRIPT_EXT,
   JSX_EXT,
+
+  PAGE_LIFECYCLES,
 }
