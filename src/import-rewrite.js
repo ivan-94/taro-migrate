@@ -3,6 +3,7 @@
  */
 const { transformFile } = require('./utils/transform')
 const { addNamedImport, addDefaultImport, removeImportSource } = require('./utils/babel')
+const { chalk } = require('./utils/index')
 const processor = require('./processor')
 
 /**
@@ -140,6 +141,17 @@ function importRewritePlugin(babel) {
             },
           })
         }
+
+        // 页面导入检查
+        const modulePath = processor.context.findModule(state.filename, source)
+        if (modulePath) {
+          const isPage = processor.context.isPage(modulePath)
+          if (isPage) {
+            const message = `致命错误，不能直接引用其他页面: ${state.filename} 引用了 ${modulePath}`
+            processor.addMessage(state.filename, message)
+            console.error(chalk.red('\t' + message))
+          }
+        }
       },
 
       /**
@@ -189,6 +201,9 @@ async function importRewrite(file) {
       [
         importRewritePlugin,
         {
+          /**
+           * @param {boolean} value
+           */
           setDirty: (value) => {
             dirty = value
           },

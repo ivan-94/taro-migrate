@@ -3,6 +3,7 @@ import { WKPage } from '@/wxat-common/utils/platform'
 import Error from '@/wxat-common/components/error/error'
 import wxApi from '@/wxat-common/utils/wxApi'
 import { useSelector } from '@tarojs/redux'
+import About from './wxat-common/pages/about'
 
 let ErrorPage: FC = (props) => {
   const loginError = useSelector((state) => state.base.loginEnvError)

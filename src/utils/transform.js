@@ -7,9 +7,8 @@ const diff = require('diff')
 // const postcss = require('postcss')
 const { getPrettierOptions } = require('./prettier')
 const { readFile, writeFile } = require('./file')
-const { getDefault } = require('./index')
+const { chalk } = require('./index')
 const { DEFAULT_BABEL_TRANSFORM_OPTIONS, DEFAULT_BABEL_GENERATOR_OPTIONS } = require('./config')
-const chalk = getDefault(require('chalk'))
 
 /**
  * @typedef {import('@babel/core').Node } BabelNode

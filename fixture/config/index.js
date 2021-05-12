@@ -1,4 +1,3 @@
-const express = require('express');
 const path = require('path');
 
 const TARO_COMPONENT_QUERY = /parse=(COMPONENT|PAGE)/;
@@ -248,7 +247,6 @@ const config = {
     },
     devServer: {
       before: (app) => {
-        app.use('/images', express.static(path.resolve(__dirname, '../src/images')));
       },
       // 设置接口代理
       proxy: {

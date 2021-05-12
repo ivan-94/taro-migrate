@@ -31,6 +31,9 @@ import checkOptions from '@/wxat-common/utils/check-options';
 import utils from '@/wxat-common/utils/util.js';
 import LinkType from '@/wxat-common/constants/link-type';
 
+// 导入其他页面
+import AboutPage from '@/wxat-common/pages/about';
+
 // # class写法
 
 type PageStateProps = {

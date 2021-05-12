@@ -46,6 +46,7 @@ const JS_EXT = ['.js', '.jsx']
 const TS_EXT = ['.ts', '.tsx']
 const JSX_EXT = ['.tsx', '.jsx']
 const SCRIPT_EXT = JS_EXT.concat(TS_EXT)
+const PLATFORM = ['h5', 'weapp', 'alipay', 'swan', 'qq', 'jd', 'rn']
 const PAGE_LIFECYCLES = [
   'componentDidShow',
   'componentDidHide',
@@ -147,4 +148,5 @@ module.exports = {
   PAGE_LIFECYCLES,
   TARO_COMPONENTS_NAMES_SET,
   TARO_COMPONENTS_UPPERCASE,
+  PLATFORM
 }

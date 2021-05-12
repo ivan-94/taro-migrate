@@ -1,10 +1,15 @@
 const debug = require('debug')('taro-migrate')
 const fs = require('fs')
+const merge = require('lodash/merge')
 const { execSync } = require('child_process')
 const { readConfig } = require('@tarojs/helper')
 const path = require('path')
 const glob = require('glob')
-const { ROOT, JSX_EXT, SCRIPT_EXT, PKG_PATH, APP_CONFIG } = require('./config')
+const { ROOT, JSX_EXT, SCRIPT_EXT, PKG_PATH, APP_CONFIG, TARO_CONFIG } = require('./config')
+/**
+ * @type {import('chalk')}
+ */
+const chalk = getDefault(require('chalk'))
 
 /**
  * @typedef {import('@tarojs/taro').AppConfig} AppConfig
@@ -77,6 +82,10 @@ function removeDeps(pkg, deps) {
       })
     }
   })
+}
+
+function readTaroConfig() {
+  return require(TARO_CONFIG)(merge)
 }
 
 /**
@@ -152,4 +161,6 @@ module.exports = {
   getAllScripts,
   removeDeps,
   getPages,
+  readTaroConfig,
+  chalk,
 }

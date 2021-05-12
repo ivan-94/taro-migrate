@@ -1,10 +1,10 @@
 const fs = require('fs')
-const path = require('path')
 const { EventEmitter } = require('events')
-const { getDefault, getPages } = require('./utils')
+const { getDefault, getPages, readTaroConfig } = require('./utils')
 const chalk = getDefault(require('chalk'))
 const { getAllScripts } = require('./utils')
 const { clearCache } = require('./utils/file')
+const { pathNormalize, normalizeToPage, findModule, resolveModule } = require('./utils/path')
 
 /**
  * @type {{[file: string]: Array<string>}}
@@ -27,6 +27,23 @@ module.exports = new (class extends EventEmitter {
    * @type {{ignoreSubmodules?: boolean, removeHocs?: string[]}}
    */
   options = {}
+  /**
+   * @type {{
+   *   allFiles: string[],
+   *   alias: {[prefix: string]: string},
+   *   pages: string[],
+   *   normalizePages: Set<string>,
+   *   findModule: (ctx: string, file: string) => string | null,
+   *   isPage: (file: string) => boolean,
+   *  }}
+   */
+  // @ts-ignore
+  context = {}
+
+  /**
+   * @type {Set<string> | null}
+   */
+  normalizeFiles = null
 
   /**
    * @param {number} code
@@ -58,6 +75,28 @@ module.exports = new (class extends EventEmitter {
     } else {
       messageBox[file] = [message]
     }
+  }
+
+  /**
+   * @param {string} context
+   * @param {string} file
+   */
+  findModule(context, file) {
+    if (!this.normalizeFiles) {
+      this.normalizeFiles = new Set(this.context.allFiles.map((i) => pathNormalize(i)))
+    }
+
+    const modulePath = resolveModule(context, file, this.context.alias)
+
+    return findModule(modulePath, this.normalizeFiles)
+  }
+
+  /**
+   * @param {string} file 规范化的文件目录
+   */
+  isPage(file) {
+    const normalize = normalizeToPage(file)
+    return this.context.normalizePages.has(normalize)
   }
 
   /**
@@ -115,10 +154,20 @@ module.exports = new (class extends EventEmitter {
     // 重新获取，可能被干掉了
     allFiles = await getAllScripts()
     const pages = await getPages()
-    const normalizePages = new Set(pages.map((i) => path.normalize(i)))
+    const normalizePages = new Set(pages.map(pathNormalize))
+
+    const taroConfig = readTaroConfig()
+
+    // 初始化上下文
+    this.context.allFiles = allFiles
+    this.context.pages = pages
+    this.context.normalizePages = normalizePages
+    this.context.alias = taroConfig.alias || {}
+    this.context.findModule = this.findModule.bind(this)
+    this.context.isPage = this.isPage.bind(this)
 
     for (const file of allFiles) {
-      const normalize = path.normalize(path.join(path.dirname(file), path.basename(file, path.extname(file))))
+      const normalize = normalizeToPage(file)
       const isPage = normalizePages.has(normalize)
       console.log(`* 正在处理: ${isPage ? '页面' : ''}  ${file}`)
       for (const [reg, transformer] of processor) {
