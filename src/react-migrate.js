@@ -3,7 +3,7 @@
  */
 const { addNamedImport, addDefaultImport, removeNamedImport } = require('./utils/babel')
 const { transformFile } = require('./utils/transform')
-const { PAGE_LIFECYCLES } = require('./utils/config')
+const { PAGE_LIFECYCLES, TARO_COMPONENTS_UPPERCASE } = require('./utils/config')
 const processor = require('./processor')
 
 /**
@@ -16,6 +16,7 @@ const processor = require('./processor')
  *   opts: O,
  *   addGetCurrentInstanceImport: boolean,
  *   addReactImport: boolean,
+ *   componentsToImport: Set<string>
  * }} State
  */
 /**
@@ -73,6 +74,9 @@ function reactMigratePlugin(babel) {
   return {
     visitor: {
       Program: {
+        enter(path, state) {
+          state.componentsToImport = new Set()
+        },
         exit(path, state) {
           if (state.addGetCurrentInstanceImport) {
             addNamedImport(path, 'wk-taro-platform', '$getRouter')
@@ -80,6 +84,12 @@ function reactMigratePlugin(babel) {
 
           if (state.addReactImport) {
             addDefaultImport(path, 'react', 'React')
+          }
+
+          if (state.componentsToImport.size) {
+            state.componentsToImport.forEach((i) => {
+              addNamedImport(path, '@tarojs/components', i)
+            })
           }
 
           removeNamedImport(path, '@/wxat-common/utils/platform', 'getRef')
@@ -294,6 +304,25 @@ function reactMigratePlugin(babel) {
             state.opts.setDirty(true)
             break
           }
+        }
+      },
+
+      /**
+       * JSX element 规范化
+       */
+      JSXElement(path, state) {
+        const node = path.node
+        if (t.isJSXIdentifier(node.openingElement.name) && node.openingElement.name.name in TARO_COMPONENTS_UPPERCASE) {
+          state.opts.setDirty(true)
+          const name = node.openingElement.name.name
+          const camelCase = TARO_COMPONENTS_UPPERCASE[name]
+          // 转换为大写
+          node.openingElement.name.name = camelCase
+          if (node.closingElement) {
+            // @ts-expect-error 肯定是一样的
+            node.closingElement.name.name = camelCase
+          }
+          state.componentsToImport.add(camelCase)
         }
       },
     },

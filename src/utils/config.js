@@ -1,4 +1,6 @@
 const path = require('path')
+const camelCase = require('lodash/camelCase')
+const upperFirst = require('lodash/upperFirst')
 
 const ROOT = process.cwd()
 const PKG_PATH = path.join(ROOT, 'package.json')
@@ -61,6 +63,62 @@ const PAGE_LIFECYCLES = [
   'onReady',
 ]
 
+const TARO_COMPONENTS_NAMES = [
+  'view',
+  'icon',
+  'progress',
+  'rich-text',
+  'text',
+  'button',
+  'checkbox',
+  'checkbox-group',
+  'form',
+  'input',
+  'label',
+  'picker',
+  'picker-view',
+  'picker-view-column',
+  'radio',
+  'radio-group',
+  'slider',
+  'switch',
+  'cover-image',
+  'textarea',
+  'cover-view',
+  'movable-area',
+  'movable-view',
+  'scroll-view',
+  'swiper',
+  'swiper-item',
+  'navigator',
+  'audio',
+  'camera',
+  'image',
+  'live-player',
+  'video',
+  'canvas',
+  'ad',
+  'web-view',
+  'block',
+  'map',
+  'slot',
+  'custom-wrapper',
+]
+
+const TARO_COMPONENTS_NAMES_SET = new Set(TARO_COMPONENTS_NAMES)
+
+/**
+ * @type {{[lowcase: string]: string}}
+ */
+const TARO_COMPONENTS_UPPERCASE = TARO_COMPONENTS_NAMES.map((i) => [upperFirst(camelCase(i)), i]).reduce(
+  (prev, [camelCase, lowcase]) => {
+    // @ts-ignore
+    prev[lowcase] = camelCase
+    return prev
+  },
+  {}
+)
+
 module.exports = {
   ROOT,
   PKG_PATH,
@@ -87,4 +145,6 @@ module.exports = {
   JSX_EXT,
 
   PAGE_LIFECYCLES,
+  TARO_COMPONENTS_NAMES_SET,
+  TARO_COMPONENTS_UPPERCASE,
 }

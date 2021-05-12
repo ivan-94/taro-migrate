@@ -29,7 +29,7 @@ const processor = require('./processor')
  * @typedef {{setDirty: (dirty: boolean) => void}} Options
  */
 
-const MODULE_TO_REMOVE = ['@tarojs/taro']
+const MODULE_TO_REMOVE = ['@tarojs/taro', '@/wxat-common/utils/platform']
 const FILES_TO_REMOVE = ['src/hoc/index.h5.ts']
 
 async function removeFiles() {
