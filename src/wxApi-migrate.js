@@ -9,8 +9,11 @@ const { WXAPI_DIR } = require('./utils/config')
 const { isExists, rm } = require('./utils/file')
 const { writeAndPrettierFile } = require('./utils/transform')
 
-const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts', 'share.ts']
-const FILES_TO_REMOVE = ['share.h5.ts']
+const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts', 'share.ts', 'share.h5.ts']
+/**
+ * @type {string[]}
+ */
+const FILES_TO_REMOVE = []
 
 /**
  * @template T
