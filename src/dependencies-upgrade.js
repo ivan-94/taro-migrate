@@ -126,6 +126,7 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
    */
   '@babel/core',
   'babel-preset-taro',
+  'babel-plugin-lodash',
 
   /**
    * 类型声明文件升级
