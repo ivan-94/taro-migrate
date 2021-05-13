@@ -37,6 +37,13 @@ const DEFAULT_BABEL_TRANSFORM_OPTIONS = () => ({
   },
 })
 
+const BROWSERS_LIST = {
+  // 生产环境兼容尽量多的机型
+  production: ['Chrome >= 49', 'ios >= 10'],
+  // 开发环境, 开启所有功能，方便调试
+  development: ['last 1 chrome version'],
+}
+
 /**
  * 扩展名
  */
@@ -125,6 +132,7 @@ module.exports = {
   PKG_PATH,
   DEFAULT_BABEL_TRANSFORM_OPTIONS,
   DEFAULT_BABEL_GENERATOR_OPTIONS,
+  BROWSERS_LIST,
 
   APP_ENTRY,
   APP_CONFIG,
@@ -148,5 +156,5 @@ module.exports = {
   PAGE_LIFECYCLES,
   TARO_COMPONENTS_NAMES_SET,
   TARO_COMPONENTS_UPPERCASE,
-  PLATFORM
+  PLATFORM,
 }

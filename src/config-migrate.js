@@ -6,9 +6,9 @@ const fs = require('fs')
 const processor = require('./processor')
 const pathUtils = require('path')
 const { isExists } = require('./utils/file')
-const { readPackageJSON, savePackageJSON, getPages } = require('./utils/index')
+const { readPackageJSON, savePackageJSON } = require('./utils/index')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
-const { ROOT, TARO_CONFIG, APP_ENTRY, APP_CONFIG } = require('./utils/config')
+const { TARO_CONFIG, APP_ENTRY, BROWSERS_LIST } = require('./utils/config')
 const { removeProperties, getProperty } = require('./utils/babel')
 
 /**
@@ -357,7 +357,7 @@ async function upgradeAppEntry() {
 
 async function pkgUpgrade() {
   const pkg = readPackageJSON()
-  pkg.browserslist = ['Chrome >= 49', 'ios >= 10']
+  pkg.browserslist = BROWSERS_LIST
   savePackageJSON(pkg)
 }
 
