@@ -312,17 +312,35 @@ function reactMigratePlugin(babel) {
        */
       JSXElement(path, state) {
         const node = path.node
-        if (t.isJSXIdentifier(node.openingElement.name) && node.openingElement.name.name in TARO_COMPONENTS_UPPERCASE) {
-          state.opts.setDirty(true)
-          const name = node.openingElement.name.name
-          const camelCase = TARO_COMPONENTS_UPPERCASE[name]
-          // 转换为大写
-          node.openingElement.name.name = camelCase
-          if (node.closingElement) {
-            // @ts-expect-error 肯定是一样的
-            node.closingElement.name.name = camelCase
+        if (t.isJSXIdentifier(node.openingElement.name)) {
+          if (node.openingElement.name.name in TARO_COMPONENTS_UPPERCASE) {
+            /**
+             * 转换小写的 原生组件为大写
+             */
+            state.opts.setDirty(true)
+            const name = node.openingElement.name.name
+            const camelCase = TARO_COMPONENTS_UPPERCASE[name]
+            // 转换为大写
+            node.openingElement.name.name = camelCase
+            if (node.closingElement) {
+              // @ts-expect-error 肯定是一样的
+              node.closingElement.name.name = camelCase
+            }
+            state.componentsToImport.add(camelCase)
           }
-          state.componentsToImport.add(camelCase)
+
+          if (node.openingElement.name.name === 'SwiperItem') {
+            /**
+             * SwiperItem 不能使用其他元素包裹
+             */
+            if (
+              path.parentPath.isJSXElement() &&
+              (!t.isJSXIdentifier(path.parentPath.node.openingElement.name) ||
+                path.parentPath.node.openingElement.name.name !== 'Swiper')
+            ) {
+              processor.addMessage(state.filename, `SwiperItem 不能包裹其他元素`)
+            }
+          }
         }
       },
     },
