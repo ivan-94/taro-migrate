@@ -132,6 +132,25 @@ function removeImportSource(path, source) {
 /**
  * @param {NodePath<Program>} path
  * @param {string} source
+ */
+function addImport(path, source) {
+  const importDecl = /** @type {ImportDeclaration | null} */ (path.node.body.find(
+    (d) => t.isImportDeclaration(d) && d.source.value === source
+  ))
+
+  if (importDecl) {
+    return
+  } else {
+    // 创建一个新的
+    const decl = template.ast(`import '${source}';`)
+    // @ts-expect-error
+    path.node.body.unshift(decl)
+  }
+}
+
+/**
+ * @param {NodePath<Program>} path
+ * @param {string} source
  * @param {string} name
  * @param {boolean} [force]
  */
@@ -225,6 +244,7 @@ function setProperty(objExp, key, value) {
 module.exports = {
   addNamedImport,
   addDefaultImport,
+  addImport,
   removeNamedImport,
   getNamedImport,
   getProperty,

@@ -56,7 +56,7 @@ function resolveModule(context, p, pathAlias) {
     return withAlias
   }
 
-  return path.resolve(path.dirname(context), withAlias)
+  return path.resolve(path.extname(context) ? path.dirname(context) : context, withAlias)
 }
 
 /**

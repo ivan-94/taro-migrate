@@ -8,6 +8,7 @@ const pathUtils = require('path')
 const { isExists } = require('./utils/file')
 const { readPackageJSON, savePackageJSON } = require('./utils/index')
 const { transformFile, writeASTToFile, writeAndPrettierFile } = require('./utils/transform')
+const { addImport } = require('./utils/babel')
 const { TARO_CONFIG, APP_ENTRY, BROWSERS_LIST } = require('./utils/config')
 const { removeProperties, getProperty } = require('./utils/babel')
 
@@ -291,7 +292,7 @@ async function upgradeAppEntry() {
          * @param {Babel} babel
          * @returns {PluginObj<Options>}
          */
-        function removePageIndexPlugin(babel) {
+        function AppEntryUpgradePlugin(babel) {
           const { types: t } = babel
           return {
             visitor: {
@@ -301,6 +302,8 @@ async function upgradeAppEntry() {
                   const name = clsDcl ? clsDcl.id.name : 'App'
                   path.node.body.push(t.exportDefaultDeclaration(t.identifier(name)))
                 }
+
+                addImport(path, 'wk-taro-platform/reset')
               },
               JSXElement(path) {
                 if (

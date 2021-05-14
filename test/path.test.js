@@ -74,7 +74,8 @@ describe('测试路径处理', () => {
       ['C:/a/', 'C:/b', 'C:/b'],
       ['C:/a/', 'b', 'C:/a/b'],
       ['C:/a/c', '../b', 'C:/a/b'],
-    ])('test %s %s -> %s', (ctx, file, expected) => {
+      ['C:/a/c/a.ts', '../b', 'C:/a/b'],
+    ])('test %s + %s -> %s', (ctx, file, expected) => {
       expect(pathNormalize(resolveModule(ctx, file, alias))).toBe(expected)
     })
   })
