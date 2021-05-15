@@ -16,6 +16,8 @@ let HoverCart = (props) => {
   const [showHoverCart, setShowHoverCart] = useState(false);
 
   useEffect(() => {
+    // 测试 接口检查
+    Taro.createSelectorQuery()
     initCart();
     return () => {
       buyHub.hub.offMapChange(onCartMapChange);

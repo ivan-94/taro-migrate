@@ -241,6 +241,16 @@ function setProperty(objExp, key, value) {
   // TODO:
 }
 
+/**
+ * @param {BabelNode} node
+ */
+function printLine(node) {
+  if (node.loc) {
+    return `line:${node.loc.start.line}`;
+  }
+  return '';
+}
+
 module.exports = {
   addNamedImport,
   addDefaultImport,
@@ -251,4 +261,5 @@ module.exports = {
   removeProperties,
   removeImportSource,
   removeImportIfEmpty,
+  printLine
 }
