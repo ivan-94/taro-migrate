@@ -57,20 +57,6 @@ const COMPONENT_WRAPPER = ['WKPage', 'WKComponent']
 const KNOWED_HOC = new Set(['WKPage', 'WKComponent', 'connect', 'hoc'])
 const unknowHocs = new Set()
 
-// 最好在 ComponentDidMount & Taro.nextTick 中访问
-const UNSAFE_API = [
-  'createAudioContext',
-  'createCameraContext',
-  'createCanvasContext',
-  'createInnerAudioContext',
-  'createIntersectionObserver',
-  'createLivePlayerContext',
-  'createLivePusherContext',
-  'createMapContext',
-  'createSelectorQuery',
-  'createVideoContext',
-]
-
 /**
  * 需要被移除的 HOC
  */
@@ -356,20 +342,6 @@ function reactMigratePlugin(babel) {
               processor.addMessage(state.filename, `SwiperItem 不能包裹其他元素`)
             }
           }
-        }
-      },
-      MemberExpression(path, state) {
-        if (
-          path.parentPath.isCallExpression() &&
-          t.isIdentifier(path.node.property) &&
-          UNSAFE_API.includes(path.node.property.name)
-        ) {
-          processor.addMessage(
-            state.filename,
-            `${printLine(path.node)}: 建议 ${
-              path.node.property.name
-            } 在 componentDidMount/useEffect + Taro.nextTick 回调中调用. 详见: https://www.notion.so/ivan94/CHANGELOG-0da3813d8d8d4fb0bd47e6cd7265892e#8b994e876fd346748d42b78562cf24e3`
-          )
         }
       },
     },

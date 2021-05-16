@@ -10,6 +10,7 @@ let ErrorPage: FC = (props) => {
   const loginEnvErrorMessage = useSelector((state) => state.base.loginEnvErrorMessage)
   const retry = () => {
     Taro.eventCenter.trigger('resetup')
+    Taro.getLaunchOptionsSync()
   }
 
   usePullDownRefresh(() => {})

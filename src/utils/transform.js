@@ -1,6 +1,6 @@
 // @ts-check
 
-const { transformAsync } = require('@babel/core')
+const { transformAsync, parseAsync, traverse } = require('@babel/core')
 const generator = require('@babel/generator')
 const prettier = require('prettier')
 const diff = require('diff')
@@ -13,6 +13,7 @@ const { DEFAULT_BABEL_TRANSFORM_OPTIONS, DEFAULT_BABEL_GENERATOR_OPTIONS } = req
 /**
  * @typedef {import('@babel/core').Node } BabelNode
  * @typedef {import('@babel/core').TransformOptions} TransformOptions
+ * @typedef {import('@babel/traverse').TraverseOptions} TraverseOptions
  * @typedef {import('@babel/core').BabelFileResult} BabelFileResult
  */
 
@@ -59,6 +60,18 @@ function diffFile(input, output) {
     isChanged,
     diffString,
   }
+}
+
+/**
+ * 遍历 指定文件的 AST
+ * @param {string} file
+ * @param {TraverseOptions} opt
+ */
+async function traverseFile(file, opt) {
+  const code = await readFile(file)
+  const finalOptions = Object.assign(DEFAULT_BABEL_TRANSFORM_OPTIONS(), { filename: file })
+  const ast = await parseAsync(code, finalOptions)
+  traverse(ast, opt)
 }
 
 /**
@@ -141,4 +154,5 @@ module.exports = {
   writeASTToFile,
   writeAndPrettierFile,
   prettierCode,
+  traverseFile,
 }
