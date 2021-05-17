@@ -265,7 +265,7 @@ function addConfig() {
   })
 }
 
-const FILES_TO_REMOVE = [OLD_MIGRATES, TARO_COMPONENTS, NPM_CONFIG]
+const FILES_TO_REMOVE = [OLD_MIGRATES, TARO_COMPONENTS, NPM_CONFIG, path.join(ROOT, '.eslintrc')]
 
 /**
  * 移除不需要的文件
