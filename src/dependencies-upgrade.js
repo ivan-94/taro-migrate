@@ -153,6 +153,8 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
   'taro-plugin-webpack-analyze',
   // H5 组件库覆盖
   'taro-plugin-wk',
+  // 分包优化
+  'taro-plugin-subpackage-optimize',
 ]
 
 // Taro 依赖

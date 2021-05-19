@@ -192,6 +192,7 @@ async function taroBuildConfigMigrate() {
                       ]),
                       t.stringLiteral('taro-plugin-webpack-analyze'),
                       t.stringLiteral('taro-plugin-wk'),
+                      t.stringLiteral('taro-plugin-subpackage-optimize'),
                     ])
                   )
                 )
