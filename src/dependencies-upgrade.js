@@ -266,7 +266,7 @@ function addDependencies() {
 
 function addConfig() {
   const base = path.join(__dirname, './template')
-  ;['.eslintrc.js', 'babel.config.js', '.npmrc'].forEach((name) => {
+  ;['babel.config.js', '.npmrc'].forEach((name) => {
     fs.copyFileSync(path.join(base, name), path.join(ROOT, name))
   })
 }
