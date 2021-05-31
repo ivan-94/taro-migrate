@@ -16,7 +16,7 @@ const {
   NPM_CONFIG,
 } = require('./utils/config')
 
-const TARO_VERSION = '3.2.7'
+const TARO_VERSION = '3.2.10'
 const PKG = readPackageJSON()
 /**
  * 是否启用了 RN
@@ -64,6 +64,22 @@ const DEPENDENCIES_TO_REMOVE = [
   '@types/diff',
   '@types/babel__core',
   '@types/prettier',
+
+  /** 去掉 eslint 和 stylelint，统一使用 wkstd */
+  'eslint',
+  'babel-eslint',
+  'eslint-plugin-react',
+  'eslint-plugin-react-hooks',
+  'eslint-plugin-import',
+  '@typescript-eslint/eslint-plugin',
+  '@typescript-eslint/parser',
+  'eslint-config-taro',
+  'eslint-plugin-taro',
+  'pretty-quick',
+
+  'stylelint',
+  'stylelint-config-taro-rn',
+  'stylelint-taro-rn',
 ]
 
 /**
@@ -103,24 +119,6 @@ const TARO_RN_DEPENDENCIES = [
  * 开发依赖升级
  */
 const DEV_DEPENDENCIES_TO_UPGRADE = [
-  /* ESLINT 升级 */
-  'eslint',
-  'babel-eslint',
-  'eslint-plugin-react',
-  'eslint-plugin-react-hooks',
-  'eslint-plugin-import',
-  '@typescript-eslint/eslint-plugin',
-  '@typescript-eslint/parser',
-  'eslint-config-taro',
-  'eslint-plugin-taro',
-
-  /**
-   * Styleint 升级
-   */
-  'stylelint',
-  'stylelint-config-taro-rn',
-  'stylelint-taro-rn',
-
   /**
    * Babel 7.x
    */
@@ -133,9 +131,9 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
    */
   '@types/react',
   '@types/webpack-env',
+
   'typescript',
   'prettier',
-  'pretty-quick',
 
   /**
    * Taro
@@ -155,6 +153,9 @@ const DEV_DEPENDENCIES_TO_UPGRADE = [
   'taro-plugin-wk',
   // 分包优化
   'taro-plugin-subpackage-optimize',
+
+  // 规范检查
+  'wkstd',
 ]
 
 // Taro 依赖
@@ -228,6 +229,9 @@ function removeOldDependencies() {
   // 先移除再安装
   removeDeps(PKG, DEV_DEPENDENCIES_TO_UPGRADE)
   removeDeps(PKG, DEPENDENCIES_TO_UPGRADE)
+
+  // 移除旧的 husky 配置
+  delete PKG['husky']
   savePackageJSON(PKG)
 }
 

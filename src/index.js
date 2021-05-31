@@ -21,5 +21,6 @@ require('./import-rewrite')()
 require('./react-migrate')()
 require('./redux-migrate')()
 require('./clear-unused')()
+require('./wkstd')()
 
 processor.run()
