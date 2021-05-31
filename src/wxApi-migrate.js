@@ -12,11 +12,11 @@ const { printLine } = require('./utils/babel')
 const { writeAndPrettierFile, traverseFile } = require('./utils/transform')
 const { ALL_REGEXP } = require('./processor')
 
-const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'native.h5.ts', 'share.ts', 'share.h5.ts']
+const FILES_TO_REPLACE = ['page.ts', 'native.ts', 'share.ts', 'share.h5.ts']
 /**
  * @type {string[]}
  */
-const FILES_TO_REMOVE = []
+const FILES_TO_REMOVE = ['native.h5.ts']
 
 /**
  * @template T

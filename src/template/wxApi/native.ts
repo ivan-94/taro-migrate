@@ -1,6 +1,6 @@
 /**
  * 原生 API
  */
-import Taro from '@tarojs/taro';
+import { NativeAPI } from 'wk-taro-platform';
 
-export default () => Taro;
+export default () => NativeAPI;
