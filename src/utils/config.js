@@ -41,7 +41,7 @@ const BROWSERS_LIST = {
   // 生产环境兼容尽量多的机型
   production: ['Chrome >= 49', 'ios >= 10'],
   // 开发环境, 开启所有功能，方便调试
-  development: ['last 1 chrome version'],
+  development: ['Chrome 74'],
 }
 
 /**
