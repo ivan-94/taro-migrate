@@ -16,7 +16,7 @@ const {
   NPM_CONFIG,
 } = require('./utils/config')
 
-const TARO_VERSION = '3.2.10'
+const TARO_VERSION = '3.x'
 const PKG = readPackageJSON()
 /**
  * 是否启用了 RN

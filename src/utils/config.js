@@ -17,8 +17,13 @@ const NPM_CONFIG = path.join(ROOT, '.npmrc')
 const YARN_LOCK = path.join(ROOT, 'yarn.lock')
 const PACKAGE_LOCK = path.join(ROOT, 'package-lock.json')
 
+/**
+ * Babel 解析器默认参数
+ * @type {import('@babel/core').GeneratorOptions}
+ */
 const DEFAULT_BABEL_GENERATOR_OPTIONS = {
   retainLines: true,
+  decoratorsBeforeExport: true,
 }
 
 /**

@@ -18,7 +18,7 @@ type DefaultProps = {
 };
 
 @WKComponent
-class GroupLists extends Component {
+export class GroupLists extends Component {
   /**
    * 组件的属性列表
    */
