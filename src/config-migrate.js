@@ -158,7 +158,7 @@ function configExtraPlugin(babel) {
 }
 
 /**
- * Taro 构建配置迁移
+ * Taro 构建配置文件迁移
  */
 async function taroBuildConfigMigrate() {
   if (!fs.existsSync(TARO_CONFIG)) {
@@ -235,11 +235,16 @@ async function taroBuildConfigMigrate() {
 }
 
 /**
- * 配置文件提取
+ * 页面配置文件提取
  * @param {string} file
  * @param {boolean} isPage
  */
 async function pageConfigMigrate(file, isPage) {
+  if (!isPage) {
+    // 不需要处理
+    return
+  }
+
   let dirty = false
   const babelOption = {
     plugins: [
@@ -259,7 +264,7 @@ async function pageConfigMigrate(file, isPage) {
 
   await transformFile(file, babelOption, { shouldWrite: () => dirty })
 
-  if (isPage && !dirty) {
+  if (!dirty) {
     const p = path.join(path.dirname(file), path.basename(file, path.extname(file))) + '.config.ts'
     if (!(await isExists(p))) {
       console.log('\t正在补全页面配置文件: ' + p)

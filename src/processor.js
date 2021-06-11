@@ -21,7 +21,7 @@ const tasks = []
 
 module.exports = new (class extends EventEmitter {
   ALL_REGEXP = /.*/
-  COMPONENT_REGEXP = /\.(tsx|jsx)$/
+  COMPONENT_REGEXP = /\.(tsx|jsx|js)$/
 
   /**
    * @type {{ignoreSubmodules?: boolean, removeHocs?: string[]}}
