@@ -20,6 +20,7 @@ require('./config-migrate')()
 require('./import-rewrite')()
 require('./react-migrate')()
 require('./redux-migrate')()
+require('./wkapi')()
 require('./clear-unused')()
 require('./wkstd')()
 
