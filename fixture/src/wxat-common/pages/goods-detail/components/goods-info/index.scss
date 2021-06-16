@@ -1,0 +1,462 @@
+/*
+ * @scoped: wk-gcg-GoodsInfo
+ */
+.wk-gcg-GoodsInfo {
+  .goods-info {
+    overflow: hidden;
+    margin-top: 20px;
+    padding-bottom: 30px;
+    background-color: rgba(255, 255, 255, 1);
+  }
+  .gray {
+    height: 20px;
+    background: rgba(241, 244, 249, 1);
+  }
+  .gift-icon {
+    width: 100px;
+    height: 46px;
+    font-size: 32px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 1);
+    line-height: 46px;
+    text-align: center;
+    margin-right: 5px;
+  }
+  .goods-name {
+    width: 100%;
+    height: unset;
+    display: block;
+    font-size: 32px;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 600;
+    color: rgba(55, 58, 68, 1);
+    padding: 0 30px;
+    box-sizing: border-box;
+  }
+  .goods-sub-name {
+    margin-top: 10px;
+    font-size: 24px;
+    font-weight: 400;
+    color: rgba(136, 147, 166, 1);
+    overflow: hidden;
+    padding: 0 30rpx;
+    box-sizing: border-box;
+  }
+  .goods-address {
+    margin-top: 10px;
+    font-size: 24px;
+    font-weight: 400;
+    color: rgba(136, 147, 166, 1);
+    overflow: hidden;
+  } /* 标签模块 */
+  .label-box {
+    // margin-top: 10px;
+    margin: 10px 30px 0;
+    display: flex;
+    justify-content: flex-start;
+    overflow-x: scroll;
+    box-sizing: border-box;
+  }
+  .label {
+    display: inline-block;
+    padding: 5px 14px;
+    font-size: 24px;
+    color: rgba(139, 151, 169, 1);
+    background: rgba(245, 247, 251, 1);
+    margin-left: 10px;
+    text-align: center;
+    max-width: 200px;
+    white-space: nowrap;
+  }
+  .label:first-child {
+    margin-left: 0px;
+  } /* 价格与销量区域 */
+  .price-count-box {
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    font-size: 26px;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+    position: relative;
+    padding: 0 30px;
+    box-sizing: border-box;
+  }
+  .price-box {
+    flex: 1;
+  }
+  .goods-price {
+    display: flex;
+    flex-direction: column;
+  }
+  .sale-price {
+    font-size: 40px;
+    color: #ff411c;
+    font-weight: 600;
+    font-family: DIN-Medium, DIN;
+  }
+  .sale-price .price {
+    font-size: 48px;
+  }
+  .integral-price {
+    font-family: DIN-Medium, DIN;
+    font-size: 36px;
+    font-weight: 600;
+    color: rgba(243, 95, 40, 1);
+  }
+  .label-price {
+    // font-size: 28px;
+    text-decoration: line-through;
+    // font-family: DIN-Medium, DIN;
+    // font-weight: 400;
+    font-size: 32px;
+    font-family: PingFangSC, PingFangSC-Regular;
+    font-weight: 400;
+    text-align: left;
+    color: #8893a6;
+
+    &.without-range {
+      margin: 16px 0 26px;
+    }
+  }
+  .count-box {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    font-size: 26px;
+    color: #8893a6;
+  } /* 赠品 */
+  .gift-label-box {
+    display: flex;
+    flex-direction: row;
+  }
+  .gift-label {
+    height: 56px;
+    border-radius: 4px;
+    padding: 0 21px;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 56px;
+    margin-right: 20px;
+  }
+  /* 销量模块 */
+  .count {
+    font-size: 26px;
+    font-weight: 400;
+    color: #8893a6;
+    margin-left: 16px;
+  } /* 商品介绍描述信息 */
+  .desc-info {
+    padding: 0 30px;
+    box-sizing: border-box;
+  }
+  .desc-info .label-box {
+    margin-top: 30px;
+  }
+  .desc-info .label-box .label {
+    color: #ff813b;
+    background: rgba(255, 242, 236, 1);
+  }
+  .desc-box {
+    display: flex;
+    font-size: 28px;
+    font-weight: 400;
+    color: rgba(93, 93, 93, 1);
+    margin-top: 30px;
+  }
+  .desc-title {
+    font-size: 28px;
+    font-weight: 400;
+    color: rgba(136, 147, 166, 1);
+    line-height: 40px;
+    margin-right: 40px;
+  }
+  .desc-text {
+    font-size: 28px;
+    font-weight: 400;
+    color: rgba(51, 55, 62, 1);
+    line-height: 40px;
+  } /* 发货信息 */
+  .goods-delivery {
+    margin-top: 30px;
+    font-size: 28px;
+    font-weight: 400;
+    color: rgba(51, 55, 62, 1);
+  }
+  .delivery-label {
+    color: #8893a6;
+  }
+  .delivery-address {
+    margin-left: 30px;
+  }
+  .delivery-time {
+    margin-left: 30px;
+  } /* 发货信息 */
+  .goods-brand-box {
+    display: flex;
+    font-size: 28px;
+    font-weight: 400;
+    color: #8893a6;
+    padding-top: 22px;
+  }
+  .goods-brand {
+    flex: 1;
+    color: rgba(0, 0, 0, 1);
+    margin-left: 30px;
+  } /* 促销 */
+  .coupon-box {
+    width: 750px;
+    height: 86px;
+    line-height: 86px;
+    background: #ffffff;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 30px;
+    box-sizing: border-box;
+  }
+  .coupon-title {
+    color: #8893a6;
+    font-size: 26px;
+    margin-left: 30px;
+  }
+  .promotion-box {
+    width: 500px;
+    margin-left: 30px;
+    font-size: 26px;
+    font-weight: 400;
+    text-align: left;
+    color: #33373e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .promotion-item {
+    margin-right: 5px;
+  }
+  .right-arrow {
+    width: 28px;
+    height: 28px;
+    margin-left: 70px;
+  } /*促销选择样式*/
+  .bottom-dialog-custom-class {
+    border-radius: 30px 30px 0px 0px !important;
+    padding: 10px 0px 0px 0px !important;
+    width: 750px !important;
+    height: 390px;
+    background: #ffffff;
+  }
+  .promotion-title {
+    padding: 0 30px;
+    font-size: 30px;
+    font-weight: 600;
+    color: #333333;
+    margin: 30px 0;
+    font-weight: 600;
+  }
+  .promotion {
+    margin: 0 30px;
+    font-size: 26px;
+    font-weight: 400;
+    color: #333333;
+  }
+  .promotion-close {
+    width: 44px;
+    height: 44px;
+    position: absolute;
+    top: 35px;
+    right: 30px;
+  } /*处方药*/
+  .drug-tip {
+    margin: 25px 0px;
+    font-size: 24px;
+    font-weight: 400;
+    text-align: left;
+    color: #8893a6;
+    line-height: 33px;
+  }
+  .drug-tag {
+    display: inline-block;
+    width: 92px;
+    height: 42px;
+    background: #007e97;
+    border-radius: 4px;
+    font-size: 24px;
+    font-weight: 500;
+    text-align: center;
+    color: #ffffff;
+    line-height: 42px;
+    margin-right: 2px;
+  }
+
+  .stock-box {
+    display: flex;
+    font-size: 26px;
+    color: #8893a6;
+
+    .stock-warnning {
+      color: #F3665E;
+    }
+  }
+
+  .recommend-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    height: 34px;
+
+    .recommend-title {
+      font-size: 24px;
+      color: #333333;
+    }
+
+    .recommend-btn {
+      font-size: 24px;
+      text-align: right;
+      color: #f35f28;
+      display: flex;
+      align-items: center;
+
+      .arrow-icon {
+        width: 10px;
+        height: 18px;
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .price-stock-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 26px;
+  }
+
+  .stock-store-dialog-custom {
+    padding: 30px 30px 48px !important;
+    width: 750px !important;
+    height: 770px;
+    background: #ffffff;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    .title {
+      height: 45px;
+      line-height: 45px;
+      font-size: 32px;
+      font-weight: 500;
+      color: #33373e;
+      margin-bottom: 20px;
+    }
+
+    .store-box {
+      padding-bottom: 20px;
+      border-top: 1px solid #dde3ec;
+      height: calc(100% - 45px - 20px - 10px);
+      overflow-y: auto;
+
+      .store-box-item {
+        padding-top: 20px;
+        border-bottom: 1px solid #dde3ec;
+
+        .store-header {
+          display: flex;
+          align-items: center;
+          height: 42px;
+
+          .store-name {
+            flex: 1;
+            height: 42px;
+            margin-right: 22px;
+            font-size: 30px;
+            color: #33373e;
+          }
+
+          .store-location {
+            text-align: right;
+            font-size: 24px;
+            color: #8893a6;
+            display: flex;
+            align-items: center;
+
+            .loaction-icon {
+              width: 24px;
+              height: 24px;
+              margin-right: 4px;
+            }
+          }
+        }
+
+        .goods-item-info {
+          padding: 20px 0;
+          display: flex;
+
+          .thumbnail {
+            width: 200px;
+            height: 200px;
+            margin-right: 20px;
+          }
+
+          .info-content {
+            flex: 1;
+
+            .info-content-goods-name {
+              height: 84px;
+              font-size: 30px;
+              color: #33373e;
+              line-height: 42px;
+            }
+
+            .stock-sale {
+              margin-top: 10px;
+              font-size: 24px;
+              color: #8893a6;
+
+              .stock-warnning {
+                color: #F3665E;
+              }
+            }
+
+            .bottom-box {
+              position: relative;
+
+              .store-address {
+                width: 330px;
+                margin-top: 40px;
+                font-size: 24px;
+                color: #8893a6;
+              }
+
+              .btn {
+                position: absolute;
+                top: -32px;
+                right: 0;
+                width: 140px;
+                height: 60px;
+                line-height: 60px;
+                background: #f35f28;
+                border-radius: 6px;
+                font-size: 26px;
+                text-align: center;
+                color: #ffffff;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .empty-data {
+      font-size: 24px;
+      color: #8893a6;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}

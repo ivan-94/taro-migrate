@@ -1,0 +1,137 @@
+/* 
+ * @scoped: wk-gcg-GoodsImage
+ */
+.wk-gcg-GoodsImage {
+  &.goods-image-box {
+    width: 750px;
+    height: 750px;
+    background-color: rgba(255, 255, 255, 1);
+    position: relative;
+  }
+  .swiper {
+    height: 750px;
+  }
+  .goods-image {
+    width: 750px;
+    height: 750px;
+  }
+  .goods-video-wraper {
+    width: 750px;
+    height: 750px;
+    position: relative;
+  }
+  .goods-video {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  .temp-poster {
+    width: 100%;
+    height: 100%;
+  }
+  .temp-play {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .temp-img {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 131px;
+    height: 131px;
+  }
+  .pause-img {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 131px;
+    height: 131px;
+  } /* vr功能入口 */
+  .vr-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 20px;
+    bottom: 38px;
+    background: rgba(0, 0, 0, 0.36);
+    border-radius: 52px;
+    padding: 28px 30px;
+    border: 1px solid rgba(255, 255, 255, 1);
+  }
+  .vr-logo {
+    width: 88px;
+    height: 47px;
+  }
+  .vr-label {
+    font-size: 30px;
+    color: rgba(255, 255, 255, 1);
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.26);
+    margin-left: 28px;
+  }
+
+  /* 预售信息 */
+  .pre-sale-info {
+    width: 750px;
+    height: 128px;
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(69, 196, 187, 1) 0%, rgba(38, 178, 129, 1) 100%);
+    padding: 22px 30px 20px 35px;
+    box-sizing: border-box;
+    z-index: 1;
+  }
+
+  .pre-sell-item {
+    display: flex;
+    height: 50%;
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+  }
+  .pre-sell-item .label {
+    height: 50px;
+    line-height: 50px;
+    font-size: 36px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 1);
+  }
+  .pre-sell-item .countdown-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 26px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 1);
+    line-height: 30px;
+  }
+  .pre-sell-item .countdown-box .unit {
+    margin: 0 4px;
+  }
+  .pre-sell-item .countdown-box .num {
+    width: 24px;
+    height: 30px;
+    background: rgba(46, 46, 46, 1);
+    border-radius: 2px;
+    text-align: center;
+  }
+  .pre-sell-item .shipping-time {
+    height: 33px;
+    font-size: 24px;
+    font-family: PingFangSC-Regular;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 1);
+    line-height: 33px;
+  }
+}

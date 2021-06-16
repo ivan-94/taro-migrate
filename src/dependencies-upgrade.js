@@ -189,6 +189,9 @@ const DEPENDENCIES_TO_UPGRADE = [
   // 平台层
   'wk-taro-platform',
   'wk-taro-components-react',
+
+  // 埋点 SDK
+  'wkapi-taro',
 ]
 
 const REGISTRY = ` --registry=https://registry.npm.taobao.org`

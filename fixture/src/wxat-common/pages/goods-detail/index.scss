@@ -1,0 +1,53 @@
+/* 
+ * @scoped: wk-wpg-GoodsDetail
+ */
+.wk-wpg-GoodsDetail {
+  background-color: rgba(255, 255, 255, 1);
+  font-family: PingFangSC-Regular, PingFang SC;
+  font-weight: 400;
+  button::after {
+    /* 
+ * @fixme: 03 禁止使用标签选择器 */
+    border: none;
+  }
+
+  .goods-detail-container {
+  }
+
+  .gray {
+    height: 20px;
+    background: rgba(241, 244, 249, 1);
+  }
+
+  .headline {
+    margin: 70px 30px 0px 30px;
+    font-size: 36px;
+    font-family: PingFangSC-Semibold, PingFang SC;
+    font-weight: 600;
+    color: rgba(51, 51, 51, 1);
+    line-height: 50px;
+  }
+
+  .not-goods-container {
+    width: 750px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 170px;
+  }
+  .not-goods-container .not-img {
+    width: 292px;
+    height: 339px;
+  }
+  .not-goods-container .not-goods-txt {
+    padding-top: 20px;
+    font-size: 28px;
+    color: #a2a2a4;
+  }
+
+  .recommend-goods-container {
+    background: #f1f4f9;
+    padding: 30px 0 100px;
+  }
+}
