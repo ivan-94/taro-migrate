@@ -180,6 +180,24 @@ async function taroBuildConfigMigrate() {
                 const config = /** @type {NodePath<ObjectExpression>} */ (path.get('init'))
                 removeProperties(config, ['plugins', 'babel', 'uglify', 'csso', 'terser'])
 
+                config.node.properties.unshift(
+                  t.objectProperty(
+                    t.identifier('terser'),
+                    template.ast(
+                      `({
+    enable: true,
+    config: {
+      output: {
+        keep_quoted_props: false,
+        quote_keys: false,
+      },
+    },
+ })`
+                      // @ts-ignore
+                    ).expression
+                  )
+                )
+
                 // 更新插件
                 config.node.properties.unshift(
                   t.objectProperty(
