@@ -1,6 +1,6 @@
 {
   "name": "taro-migrate",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Taro 3.x 迁移，兼容性迁移",
   "scripts": {
     "test": "jest"
